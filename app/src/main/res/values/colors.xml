@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="silver">#C0C0C0</color>
+    <color name="gray">#D5DBDB</color>
+    <color name="lime">#DAF7A6</color>
+    <color name="black">#000000</color>
+    <color name="red">#FF0000</color>
+    <color name="green">#008000</color>
+    <color name="teal">#008080</color>
+    <color name="teal_light">#b2d8d8</color>
+    <color name="teal_very_light">#e1ffff</color>
+    <color name="blue">#1e90ff</color>
+    <color name="white">#FFFFFF</color>
+    <color name="darkGrey">#999999</color>
+    <color name="lightGrey">#f9f9f9</color>
+    <color name="orange">#FFA500</color>
+    <color name="golden_yellow">#FFDF00</color>
+    <color name="applicationBackgroundColor">#efeff0</color>
+    <color name="strongWhite">#FBFCFC</color>
+    <color name="off_white">#F8F8FF</color>
+    <color name="androidDefaultColor">#808080</color>
+    <color name="bottle_green">#4a6850</color>
+    <color name="light_teal">#3dcab9</color>
+    <color name="gold">#ffbf00</color>
+    <color name="light_blue">#5DADE2</color>
+    <color name="maron">#941717</color>
+    <color name="dashboard_grey">#7f8e9e</color>
+
+
+</resources>

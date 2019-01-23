@@ -1,0 +1,24 @@
+{
+  "categories": [
+    {
+      "categoryId": 1,
+      "categoryName": "General"
+    },
+    {
+      "categoryId": 2,
+      "categoryName": "Personal"
+    },
+    {
+      "categoryId": 5,
+      "categoryName": "Studies"
+    },
+    {
+      "categoryId": 2,
+      "categoryName": "Work"
+    },
+    {
+      "categoryId": 4,
+      "categoryName": "Business"
+    }
+  ]
+}
