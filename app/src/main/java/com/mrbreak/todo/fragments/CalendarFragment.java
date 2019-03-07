@@ -1,7 +1,11 @@
 package com.mrbreak.todo.fragments;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.graphics.RectF;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
@@ -14,19 +18,11 @@ import android.widget.ImageView;
 import com.alamkanak.weekview.MonthLoader;
 import com.alamkanak.weekview.WeekView;
 import com.alamkanak.weekview.WeekViewEvent;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.mrbreak.todo.R;
 import com.mrbreak.todo.constants.Constants;
-import com.mrbreak.todo.events.GetToDosFinished;
-import com.mrbreak.todo.events.GetToDosStarted;
-import com.mrbreak.todo.model.ToDo;
-import com.mrbreak.todo.util.SharedPrefUtil;
+import com.mrbreak.todo.repository.model.ToDoModel;
 import com.mrbreak.todo.util.Utils;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
+import com.mrbreak.todo.viewmodel.CalendarListViewModel;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -35,8 +31,7 @@ import java.util.List;
 
 public class CalendarFragment extends Fragment {
     private WeekView weekView;
-    private List<ToDo> toDoList;
-   // private JobManager jobManager;
+    private CalendarListViewModel calendarListViewModel;
 
     public CalendarFragment() {
         // Required empty public constructor
@@ -52,75 +47,57 @@ public class CalendarFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            String stringList = getArguments().getString(Constants.LIST);
-            toDoList = new Gson().fromJson(stringList, new TypeToken<ArrayList<ToDo>>() {
-            }.getType());
-        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_calendar, container, false);
-
-        ImageView closeImageView = view.findViewById(R.id.closeImageView);
-        closeImageView.setColorFilter(ContextCompat.getColor(getContext(), R.color.black));
-
-        closeImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SharedPrefUtil.saveCurrentFragment(getContext(),
-                        Constants.ONE_INT);
-                Utils.dismissKeyBoard(getContext());
-                getActivity().finish();
-            }
-        });
-
-        weekView = view.findViewById(R.id.weekView);
-        displayEvents(toDoList);
-
-        return view;
+        return inflater.inflate(R.layout.fragment_calendar, container, false);
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        //EventBus.getDefault().post(new GetToDosStarted(EventBus.getDefault()));
-    }
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-    @Subscribe
-    public void onEvent(GetToDosStarted event) {
-       // jobManager.addJobInBackground(new GetToDoJob(EventBus.getDefault()));
-    }
+        try {
+            ImageView closeImageView = view.findViewById(R.id.closeImageView);
+            closeImageView.setColorFilter(ContextCompat.getColor(getContext(), R.color.black));
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEvent(GetToDosFinished event) {
-        if (event != null && event.getToDoList() != null && event.getToDoList().size() > 0) {
-            toDoList = event.getToDoList();
-            displayEvents(toDoList);
+            closeImageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    getActivity().finish();
+                }
+            });
+
+            weekView = view.findViewById(R.id.weekView);
+            weekView.setWeekViewLoader(new MonthLoader(new MonthLoader.MonthChangeListener() {
+                @Override
+                public List<? extends WeekViewEvent> onMonthChange(int newYear, int newMonth) {
+                    return null;
+                }
+            }));
+
+            calendarListViewModel = ViewModelProviders.of(this).get(CalendarListViewModel.class);
+
+            calendarListViewModel.getToDoList().observe(this, new Observer<List<ToDoModel>>() {
+                @Override
+                public void onChanged(@Nullable List<ToDoModel> toDos) {
+                    displayEvents(toDos);
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        EventBus.getDefault().register(this);
-    }
-
-    @Override
-    public void onStop() {
-        EventBus.getDefault().unregister(this);
-        super.onStop();
-    }
-
-    private void displayEvents(final List<ToDo> toDos) {
+    private void displayEvents(final List<ToDoModel> toDos) {
         weekView.setWeekViewLoader(new MonthLoader(new MonthLoader.MonthChangeListener() {
             @Override
             public List<? extends WeekViewEvent> onMonthChange(int newYear, int newMonth) {
                 List<WeekViewEvent> events = new ArrayList<>();
                 if (toDos != null && toDos.size() > 0) {
-                    for (ToDo todo : toDos) {
+                    for (ToDoModel todo : toDos) {
                         Calendar calendar = Calendar.getInstance();
                         Date date = Utils.convertStringToDate(todo.getDueDate());
                         calendar.setTime(date);

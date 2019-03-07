@@ -1,7 +1,6 @@
 package com.mrbreak.todo.customspinners;
 
 import android.content.Context;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,6 +54,9 @@ public class PriorityAdapter extends BaseAdapter {
                 break;
             default:
         }
+        view.setPadding(10, 20, view.getPaddingRight(),
+                20);
+        view.setBackgroundResource(R.color.off_white);
         return view;
     }
 }

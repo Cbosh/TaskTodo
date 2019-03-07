@@ -4,7 +4,7 @@
         android:width="1.0dip"
         android:height="1.0dip"
         android:color="@color/applicationBackgroundColor" />
-    <solid android:color="@color/white" />
+    <solid android:color="@color/off_white" />
 
     <corners
         android:bottomLeftRadius="5dip"

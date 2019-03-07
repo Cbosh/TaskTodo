@@ -1,7 +1,6 @@
 package com.mrbreak.todo.customspinners;
 
 import android.content.Context;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,6 +43,10 @@ public class CategoriesAdapter extends BaseAdapter {
         view = inflater.inflate(R.layout.category_spinner, null);
         TextView categoryName = view.findViewById(R.id.categoryName);
         categoryName.setText(categories.get(i).getCategoryName());
+        categoryName.setBackgroundResource(R.color.off_white);
+        view.setBackgroundResource(R.color.off_white);
+        view.setPadding(10, 20, view.getPaddingRight(),
+                20);
         return view;
     }
 }

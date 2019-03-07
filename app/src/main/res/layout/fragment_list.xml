@@ -1,36 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".fragments.ToDoListFragment">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="visible">
+    <data>
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/to_dos_recycler_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbars="vertical" />
-
-    </RelativeLayout>
+        <variable
+            name="viewmodel"
+            type="com.mrbreak.todo.viewmodel.ToDoListViewModel" />
+    </data>
 
     <FrameLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_margin="10dp">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/off_white"
+        android:orientation="vertical"
+        tools:context=".fragments.ToDoListFragment">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="visible">
+
+            <View
+                android:id="@+id/gradientLine"
+                android:visibility="visible"
+                android:layout_width="match_parent"
+                android:layout_height="5dp"
+                android:layout_above="@+id/adView"
+                android:background="@drawable/gradient_line" />
+
+            <com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/adView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_gravity="bottom"
+                android:visibility="visible"
+                ads:adSize="SMART_BANNER"
+                ads:adUnitId="ca-app-pub-4608841867290381/2059168818" />
+
+            <android.support.v4.widget.SwipeRefreshLayout
+                android:id="@+id/pullToRefresh"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/gradientLine"
+                android:visibility="visible">
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/toDoRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scrollbars="none" />
+
+            </android.support.v4.widget.SwipeRefreshLayout>
+
+
+            <LinearLayout
+                android:id="@+id/empty_list_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/gradientLine"
+                android:layout_centerInParent="true"
+                android:orientation="vertical">
+
+                <com.mrbreak.todo.components.CustomTextView
+                    android:id="@+id/noTask"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="40dp"
+                    android:layout_marginRight="40dp"
+                    android:text="@string/no_task"
+                    android:visibility="visible" />
+
+                <com.mrbreak.todo.components.CustomTextView
+                    android:id="@+id/pleaseAdd"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="40dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginRight="40dp"
+                    android:text="@string/please_add_task"
+                    android:visibility="visible" />
+            </LinearLayout>
+
+        </RelativeLayout>
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/addToDoFloatingActionButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@mipmap/ic_add_black_24dp" />
-    </FrameLayout>
+            android:layout_gravity="bottom|right"
+            android:layout_marginRight="40dp"
+            android:layout_marginBottom="80dp"
+            android:src="@mipmap/ic_add_black_24dp"
+            android:visibility="gone" />
 
-</RelativeLayout>
+    </FrameLayout>
+</layout>

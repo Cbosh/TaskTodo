@@ -3,16 +3,16 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="10dp"
-    android:background="@color/white"
+    android:background="@color/off_white"
     android:orientation="horizontal">
 
-    <TextView
+    <com.mrbreak.todo.components.CustomTextView
         android:id="@+id/legend"
         android:layout_width="20dp"
         android:layout_height="20dp"
         android:layout_marginRight="10dp" />
 
-    <TextView
+    <com.mrbreak.todo.components.CustomTextView
         android:id="@+id/percentage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />

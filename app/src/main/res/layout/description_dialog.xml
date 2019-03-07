@@ -7,7 +7,6 @@
     android:orientation="vertical">
 
     <RelativeLayout
-
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -17,13 +16,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <TextView
+            <com.mrbreak.todo.components.CustomTextView
                 android:id="@+id/headerTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:gravity="center"
                 android:text="Description"
+                android:textColor="@color/androidDefaultColor"
                 android:textSize="18sp" />
 
             <ImageView
@@ -35,6 +35,16 @@
                 android:padding="10dp"
                 android:src="@mipmap/ic_close_black_24dp" />
 
+            <ImageView
+                android:id="@+id/saveDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerInParent="true"
+                android:padding="10dp"
+                android:src="@mipmap/ic_done_black_24dp"
+                android:text="@string/save" />
+
         </RelativeLayout>
 
         <View
@@ -44,25 +54,30 @@
             android:layout_below="@+id/header"
             android:background="@drawable/gradient_line" />
 
-        <EditText
+        <com.mrbreak.todo.components.CustomEditText
             android:id="@+id/description"
+            style="@style/editTextTheme"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/line"
             android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
             android:layout_marginTop="20dp"
-            android:maxLength="400" />
+            android:layout_marginRight="10dp"
+            android:background="#00000000"
+            android:lineSpacingExtra="8dp"
+            android:maxLength="400"
+            android:paddingBottom="50dp"
+            android:textCursorDrawable="@drawable/cursor_teal" />
 
         <Button
             android:id="@+id/saveButton"
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:layout_alignParentBottom="true"
-            android:layout_marginBottom="10dp"
             android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
             android:layout_marginTop="20dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="10dp"
             android:background="@drawable/teal_button_background"
             android:text="Save"
             android:textColor="@color/white" />

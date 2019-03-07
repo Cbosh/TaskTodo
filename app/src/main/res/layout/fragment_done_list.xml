@@ -1,18 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
-    android:padding="20dp"
-    tools:context=".fragments.ProfileFragment">
+    android:background="@color/off_white"
+    android:padding="20dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/navigationBar"
-        android:background="@color/strongWhite"
+        android:background="@color/off_white"
         android:visibility="visible">
 
         <android.support.v7.widget.RecyclerView
@@ -21,14 +17,6 @@
             android:layout_height="match_parent"
             android:scrollbars="vertical" />
 
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/addToDoFloatingActionButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:src="@mipmap/ic_add_black_24dp" />
-
     </RelativeLayout>
 
-</android.support.design.widget.CoordinatorLayout>
+</RelativeLayout>

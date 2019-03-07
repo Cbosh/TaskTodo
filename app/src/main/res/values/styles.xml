@@ -40,4 +40,31 @@
 
     <style name="PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
+    <style name="DialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/slide_up_dialog</item>
+        <item name="android:windowExitAnimation">@anim/slide_down_dialog</item>
+    </style>
+
+    <!-- Animation for dialog box -->
+    <style name="DialogSlideAnim" parent="@android:style/Theme.Dialog">
+        <item name="android:windowAnimationStyle">@style/DialogAnimation</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
+    <style name="whiteTextViewStyle" parent="@android:style/Widget.TextView">
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="greyColorViewStyle" parent="@android:style/Widget.TextView">
+        <item name="android:textColor">@color/androidDefaultColor</item>
+    </style>
+
+    <style name="redColorViewStyle" parent="@android:style/Widget.TextView">
+        <item name="android:textColor">@color/red</item>
+    </style>
+
+    <style name="blackColorViewStyle" parent="@android:style/Widget.TextView">
+        <item name="android:textColor">@color/black</item>
+    </style>
+
 </resources>

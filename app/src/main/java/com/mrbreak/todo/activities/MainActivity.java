@@ -1,7 +1,9 @@
 package com.mrbreak.todo.activities;
 
+import android.app.Dialog;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Build;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -13,63 +15,41 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
+import android.widget.CompoundButton;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
-import com.birbit.android.jobqueue.JobManager;
-import com.google.gson.Gson;
+import com.google.android.gms.ads.MobileAds;
+import com.mrbreak.todo.BuildConfig;
 import com.mrbreak.todo.R;
 import com.mrbreak.todo.constants.Constants;
-import com.mrbreak.todo.events.BackPressedFinished;
-import com.mrbreak.todo.events.DisplayFragmentFinished;
-import com.mrbreak.todo.events.DisplayFragmentStarted;
-import com.mrbreak.todo.events.FilterTodos;
-import com.mrbreak.todo.events.GetToDosFinished;
-import com.mrbreak.todo.events.GetToDosStarted;
-import com.mrbreak.todo.fragments.CalendarFragment;
 import com.mrbreak.todo.fragments.DashBoardFragment;
+import com.mrbreak.todo.fragments.ToDoDetailFragment;
 import com.mrbreak.todo.fragments.ToDoDoneFragment;
 import com.mrbreak.todo.fragments.ToDoListFragment;
-import com.mrbreak.todo.fragments.ToDoOverDueFragment;
-import com.mrbreak.todo.jobmanager.ToDoJobManager;
-import com.mrbreak.todo.jobs.DisplayFragmentJob;
-import com.mrbreak.todo.jobs.GetToDoJob;
-import com.mrbreak.todo.model.ToDo;
-import com.mrbreak.todo.util.SharedPrefUtil;
-import com.mrbreak.todo.util.Utils;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
+import com.mrbreak.todo.view.ChangeHeaderBar;
 
 import java.util.List;
 
-import io.realm.Realm;
-import io.realm.RealmConfiguration;
-
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ChangeHeaderBar {
 
     private DrawerLayout mDrawerLayout;
-    private ToDoJobManager toDoJobManager;
-    private JobManager jobManager;
     private ActionBar actionBar;
     private NavigationView navigationView;
-    private List<ToDo> toDos;
     private boolean executeOnFirstLoad = true;
-    private TextView todoTextView;
-    private TextView doneTextView;
-    private TextView overDueTextView;
-    private FrameLayout badgeCountFrameLayout;
-    private TextView badgeCountOverdue;
-    private List<ToDo> overdueList;
+    private MenuItem actionFilterMenu;
+    private MenuItem addToDoMenu;
+    private View gradientLine;
+    private View toolBarLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,46 +57,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         try {
-            Realm.init(getApplicationContext());
-            RealmConfiguration config = new RealmConfiguration.Builder()
-                    // .migration(new MyRealmMigration())
-                    .deleteRealmIfMigrationNeeded()
-                    .name(Constants.DATABASE_NAME)
-                    .schemaVersion(2)
-                    .build();
-
-            Realm.setDefaultConfiguration(config);
-
+            MobileAds.initialize(this, "ca-app-pub-4608841867290381~2690434643");
+            TextView versionNumber = findViewById(R.id.versionNumber);
+            String version = getString(R.string.version) + Constants.SPACE + BuildConfig.VERSION_NAME;
+            versionNumber.setText(version);
+            toolBarLayout = findViewById(R.id.toolBarLayout);
             mDrawerLayout = findViewById(R.id.drawer_layout);
-
-            badgeCountFrameLayout = findViewById(R.id.badgeCountFrameLayout);
-            badgeCountOverdue = findViewById(R.id.badgeCountOverdue);
-
-            todoTextView = findViewById(R.id.toDo);
-            doneTextView = findViewById(R.id.done);
-            overDueTextView = findViewById(R.id.overDue);
-
-            todoTextView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    toDoClick();
-                }
-            });
-
-            doneTextView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    doneClick();
-                }
-            });
-
-            overDueTextView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    overDueClick();
-                }
-            });
-
+            gradientLine = toolBarLayout.findViewById(R.id.gradientLine);
             Toolbar toolbar = findViewById(R.id.toolbar);
             setSupportActionBar(toolbar);
 
@@ -138,15 +85,7 @@ public class MainActivity extends AppCompatActivity {
                             mDrawerLayout.closeDrawers();
                             switch (menuItem.getItemId()) {
                                 case R.id.dashboard:
-                                    SharedPrefUtil.saveCurrentFragment(getBaseContext(),
-                                            Constants.ZERO_INT);
                                     openDashBoard();
-                                    return true;
-
-                                case R.id.calendar:
-                                    SharedPrefUtil.saveCurrentFragment(getBaseContext(),
-                                            Constants.ZERO_INT);
-                                    openCalendar();
                                     return true;
 
                                 case R.id.share:
@@ -154,8 +93,6 @@ public class MainActivity extends AppCompatActivity {
                                     return true;
 
                                 case R.id.rateUs:
-//                                    SharedPrefUtil.saveCurrentFragment(getBaseContext(),
-//                                            Constants.ZERO_INT);
                                     rateUs();
                                     return true;
                             }
@@ -195,6 +132,9 @@ public class MainActivity extends AppCompatActivity {
             if (executeOnFirstLoad) {
                 displayActionBar(true);
                 executeOnFirstLoad = false;
+            }
+
+            if (savedInstanceState == null) {
                 toDoClick();
             }
 
@@ -207,54 +147,9 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_search, menu);
-
-        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
-        searchView.setMaxWidth(Integer.MAX_VALUE);
-
-        searchView.setQueryHint("Search");
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String s) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String s) {
-                //SearchFragment.this.onQueryTextChange(s);
-                return false;
-            }
-        });
-
+        actionFilterMenu = menu.findItem(R.id.action_filter);
+        addToDoMenu = menu.findItem(R.id.add_todo);
         return true;
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        badgeCountOverdue.setVisibility(View.GONE);
-        badgeCountFrameLayout.setVisibility(View.GONE);
-
-        EventBus.getDefault().post(new GetToDosStarted(EventBus.getDefault()));
-
-        if (toDoJobManager == null) {
-            toDoJobManager = new ToDoJobManager();
-        }
-
-        if (jobManager == null) {
-            jobManager = toDoJobManager.getJobManager(getApplicationContext());
-        }
-
-        if (SharedPrefUtil.getCurrentFragment(getApplicationContext()) == Constants.ZERO_INT) {
-            return;
-        }
-
-        if (SharedPrefUtil.getCurrentFragment(getApplicationContext()) == Constants.TODO_LIST) {
-            setFragment(new ToDoListFragment());
-        } else if (SharedPrefUtil.getCurrentFragment(getApplicationContext()) == Constants.DONE_LIST) {
-            setFragment(new ToDoDoneFragment());
-        } else if (SharedPrefUtil.getCurrentFragment(getApplicationContext()) == Constants.OVER_DUE_LIST) {
-            setFragment(new ToDoOverDueFragment());
-        }
     }
 
     private void displayActivity(Intent intent) {
@@ -262,26 +157,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        EventBus.getDefault().register(this);
-    }
-
-    @Override
-    protected void onStop() {
-        EventBus.getDefault().unregister(this);
-        super.onStop();
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
+                String fragmentName = getSupportFragmentManager().getFragments().get(0).getClass().getName();
+                if (!TextUtils.isEmpty(fragmentName) && fragmentName.contains(ToDoDetailFragment.class.getName())) {
+                    onBackPressed();
+                    return true;
+                }
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 return true;
 
             case R.id.action_filter:
-                EventBus.getDefault().post(new FilterTodos());
+                openFilterDialog();
+
+                return true;
+
+            case R.id.add_todo:
+                setFragment(new ToDoDetailFragment());
+
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -289,13 +183,28 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        String fragmentName = getSupportFragmentManager().getFragments().get(0).getClass().getName();
-        if (fragmentName.contains(ToDoDoneFragment.class.getName()) ||
-                fragmentName.contains(ToDoListFragment.class.getName()) ||
-                fragmentName.contains(ToDoOverDueFragment.class.getName())) {
+        List<Fragment> frags = getSupportFragmentManager().getFragments();
+        if (frags.size() <= 0) {
             finish();
         }
+
+        String fragmentName = getSupportFragmentManager().getFragments().get(0).getClass().getName();
+
+        if (!TextUtils.isEmpty(fragmentName) &&
+                fragmentName.contains(DashBoardFragment.class.getName())) {
+            gradientLine.setVisibility(View.VISIBLE);
+        }
+
+        if (!TextUtils.isEmpty(fragmentName) && fragmentName.contains
+                (ToDoDoneFragment.class.getName()) ||
+                fragmentName.contains(ToDoListFragment.class.getName())) {
+            finish();
+        }
+
         if (getSupportFragmentManager().getBackStackEntryCount() > 1) {
+            if (fragmentName.contains(ToDoDetailFragment.class.getName())) {
+                displayHomeIcon();
+            }
             getSupportFragmentManager().popBackStack();
             displayActionBar(true);
         } else {
@@ -303,96 +212,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Subscribe
-    public void onEvent(DisplayFragmentStarted event) {
-        jobManager = toDoJobManager.getJobManager(getApplicationContext());
-        jobManager.addJobInBackground(new DisplayFragmentJob(EventBus.getDefault(), event.getFragment()));
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEvent(BackPressedFinished e) {
-        onBackPressed();
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEvent(DisplayFragmentFinished e) {
-        setFragment(e.getFragment());
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEvent(GetToDosFinished event) {
-        if (event != null && event.getToDoList() != null && !event.getToDoList().isEmpty()) {
-            overdueList = Utils.getOverDueList(event.getToDoList());
-            if (overdueList != null && !overdueList.isEmpty()) {
-                badgeCountFrameLayout.setVisibility(View.VISIBLE);
-                badgeCountOverdue.setVisibility(View.VISIBLE);
-                String badgeCount = "" + overdueList.size();
-                badgeCountOverdue.setText(badgeCount);
-            }
-        }
-    }
-
-    @Subscribe
-    public void onEvent(GetToDosStarted event) {
-        jobManager.addJobInBackground(new GetToDoJob(EventBus.getDefault()));
-    }
-
     private void toDoClick() {
         setFragment(new ToDoListFragment());
-        setBackGroundDrawable(1, todoTextView);
-        SharedPrefUtil.saveCurrentFragment(getApplicationContext(), Constants.TODO_LIST);
-    }
-
-    private void doneClick() {
-        setFragment(new ToDoDoneFragment());
-        setBackGroundDrawable(2, doneTextView);
-        SharedPrefUtil.saveCurrentFragment(getApplicationContext(), Constants.DONE_LIST);
-
-    }
-
-    private void overDueClick() {
-        setFragment(new ToDoOverDueFragment());
-        setBackGroundDrawable(3, overDueTextView);
-        SharedPrefUtil.saveCurrentFragment(getApplicationContext(), Constants.OVER_DUE_LIST);
-    }
-
-    private void setBackGroundDrawable(int selectedItem, TextView textView) {
-        clearHighlightedTextView(todoTextView);
-        todoTextView.setBackground(getResources().getDrawable(R.drawable.todo_header_background));
-        clearHighlightedTextView(doneTextView);
-        doneTextView.setBackground(getResources().getDrawable(R.drawable.done_new_header_background));
-        clearHighlightedTextView(overDueTextView);
-        overDueTextView.setBackground(getResources().getDrawable(R.drawable.over_due_header_background));
-
-        HighlightTextView(textView, selectedItem);
-    }
-
-    private void clearHighlightedTextView(TextView textView) {
-        textView.setTypeface(Typeface.DEFAULT);
-        textView.setTextColor(getResources().getColor(R.color.black));
-    }
-
-    private void HighlightTextView(TextView textView, int selectedHeader) {
-        textView.setTypeface(Typeface.DEFAULT_BOLD);
-        textView.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.teal));
-        if (selectedHeader == 1) {
-            textView.setBackground(ContextCompat.getDrawable(getApplicationContext(),
-                    R.drawable.todo_selected_header_background));
-        } else if (selectedHeader == 2) {
-            textView.setBackground(ContextCompat.getDrawable(getApplicationContext(),
-                    R.drawable.done_selected_header_background));
-        } else {
-            textView.setBackground(ContextCompat.getDrawable(getApplicationContext(),
-                    R.drawable.over_due_selected_header_background));
-        }
     }
 
     private void shareApp() {
         Intent sendIntent = new Intent();
         sendIntent.setAction(Intent.ACTION_SEND);
         sendIntent.putExtra(Intent.EXTRA_TEXT,
-                "Hey check out my app at:" +
-                        " https://play.google.com/store/apps/details?id=com.google.android.apps.plus");
+                "Hey, please check out this app:" +
+                        " https://play.google.com/store/apps/details?id=com.mrbreak.todo");
         sendIntent.setType("text/plain");
         startActivity(sendIntent);
     }
@@ -406,16 +235,33 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void openDashBoard() {
-        Intent intent = new Intent(getBaseContext(), DashBoardActivity.class);
-        intent.putExtra(Constants.LIST, getBundle());
-        displayActivity(intent);
+        setFragment(new DashBoardFragment());
+        displayActionBar(false);
     }
 
     private void rateUs() {
+        Uri uri = Uri.parse("market://details?id=" + getApplicationContext().getPackageName());
+        Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
+        // To count with Play market backstack, After pressing back button,
+        // to taken back to our application, we need to add following flags to intent.
+        goToMarket.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY |
+                Intent.FLAG_ACTIVITY_NEW_DOCUMENT |
+                Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+        try {
+            startActivity(goToMarket);
+        } catch (ActivityNotFoundException e) {
+            startActivity(new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("http://play.google.com/store/apps/details?id=" +
+                            getApplicationContext().getPackageName())));
+        }
+
     }
 
 
     public void displayActionBar(boolean isVisiBleActionBar) {
+        if (actionBar == null) {
+            actionBar = getSupportActionBar();
+        }
         if (isVisiBleActionBar) {
             actionBar.show();
         } else {
@@ -426,45 +272,128 @@ public class MainActivity extends AppCompatActivity {
     private void setStatusBarColor() {
         Window window = getWindow();
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        window.setStatusBarColor(ContextCompat.getColor(getApplicationContext(), R.color.white));
+        window.setStatusBarColor(ContextCompat.getColor(getApplicationContext(), R.color.off_white));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             View decor = getWindow().getDecorView();
             decor.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         }
     }
 
-    private void setFragment(Fragment fragment) {
-        if (fragment == null || fragment.isAdded()) {
-            return;
+    public void setFragment(Fragment fragment) {
+        if (fragment.getClass().getName().contains(ToDoDetailFragment.class.getName())) {
+            actionFilterMenu.setVisible(false);
+            addToDoMenu.setVisible(false);
+        } else {
+            if (actionFilterMenu != null) {
+                actionFilterMenu.setVisible(true);
+                addToDoMenu.setVisible(true);
+            }
+        }
+
+        if (fragment.getClass().getName().contains(DashBoardFragment.class.getName())) {
+            gradientLine.setVisibility(View.GONE);
+        } else {
+            gradientLine.setVisibility(View.VISIBLE);
         }
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction =
                 fragmentManager.beginTransaction();
 
-        if (fragment.getClass().getName().contains(CalendarFragment.class.getName()) ||
-                fragment.getClass().getName().contains(DashBoardFragment.class.getName()) ||
-                fragment.getClass().getName().contains(ToDoDoneFragment.class.getName())) {
-            fragment.setArguments(getBundle());
-        }
+        fragmentTransaction.setCustomAnimations(R.anim.slide_in, R.anim.slide_out,
+                R.anim.enter_from_left, R.anim.exit_to_right);
 
-        fragmentTransaction.replace(R.id.fragmentFrameLayout, fragment).setCustomAnimations(R.anim.fade_in,
-                R.anim.fade_out);
+        fragmentTransaction.replace(R.id.fragmentFrameLayout, fragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
-
-        if (fragment.getClass().getName().contains(ToDoListFragment.class.getName()) ||
-                fragment.getClass().getName().contains(ToDoDoneFragment.class.getName()) ||
-                fragment.getClass().getName().contains(ToDoOverDueFragment.class.getName())) {
-            displayActionBar(true);
-        } else {
-            displayActionBar(false);
-        }
     }
 
     private Bundle getBundle() {
         Bundle bundle = new Bundle();
-        bundle.putString(Constants.LIST, new Gson().toJson(toDos));
         return bundle;
+    }
+
+    private void openFilterDialog() {
+        final Dialog dialog;
+        dialog = new Dialog(this, R.style.DialogSlideAnim);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.to_do_filter);
+
+        RadioButton toDoRadioButton = dialog.findViewById(R.id.toDoRadioButton);
+        RadioButton doneRadioButton = dialog.findViewById(R.id.doneRadioButton);
+
+        toDoRadioButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (b) {
+                    if (!checkAttachedFragment()) {
+                        dialog.dismiss();
+                        return;
+                    }
+
+                    String fragmentName = getSupportFragmentManager().getFragments().get(0).getClass().getName();
+                    if (fragmentName.contains(ToDoListFragment.class.getName())) {
+                        dialog.dismiss();
+                        return;
+                    }
+
+                    setFragment(new ToDoListFragment());
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        doneRadioButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (b) {
+                    if (!checkAttachedFragment()) {
+                        dialog.dismiss();
+                        return;
+                    }
+
+                    String fragmentName = getSupportFragmentManager().getFragments().get(0).getClass().getName();
+                    if (fragmentName.contains(ToDoDoneFragment.class.getName())) {
+                        dialog.dismiss();
+                        return;
+                    }
+
+                    setFragment(new ToDoDoneFragment());
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+        layoutParams.copyFrom(dialog.getWindow().getAttributes());
+        layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
+        ;
+        layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        ;
+        layoutParams.gravity = Gravity.TOP | Gravity.RIGHT;
+
+        dialog.show();
+        dialog.getWindow().setAttributes(layoutParams);
+    }
+
+    private boolean checkAttachedFragment() {
+        List<Fragment> frags = getSupportFragmentManager().getFragments();
+        return frags.size() > 0;
+    }
+
+    private void displayHomeIcon() {
+        getSupportActionBar().setHomeAsUpIndicator(R.mipmap.ic_menu_black_24dp);
+        getSupportActionBar().setTitle(getString(R.string.app_name));
+        actionFilterMenu.setVisible(true);
+        addToDoMenu.setVisible(true);
+    }
+
+    @Override
+    public void changeHeaderBar() {
+        getSupportActionBar().setHomeAsUpIndicator(R.mipmap.outline_arrow_back_black_24);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle(getString(R.string.details));
+        actionFilterMenu.setVisible(false);
+        addToDoMenu.setVisible(false);
     }
 }

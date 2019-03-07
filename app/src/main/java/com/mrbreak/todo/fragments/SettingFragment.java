@@ -9,10 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.mrbreak.todo.R;
-import com.mrbreak.todo.events.BackPressedFinished;
 import com.mrbreak.todo.util.Utils;
-
-import org.greenrobot.eventbus.EventBus;
 
 public class SettingFragment extends Fragment {
 

@@ -2,11 +2,11 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="160dp"
-    android:background="@color/white"
+    android:background="@color/off_white"
     android:orientation="vertical"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
-        <TextView
+    <com.mrbreak.todo.components.WhiteCustomTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
@@ -16,8 +16,8 @@
         android:background="@drawable/to_do_menu_header_background"
         android:gravity="center"
         android:padding="10dp"
-        android:text="To-do"
-        android:textColor="@color/white"
+        android:text="@string/todo_text"
+        android:textColor="@color/off_white"
         android:textSize="16sp"
         android:textStyle="bold" />
 

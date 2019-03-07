@@ -4,22 +4,22 @@
         <item
             android:id="@+id/dashboard"
             android:icon="@mipmap/outline_show_chart_black_24"
-            android:title="Dashboard" />
-
-        <item
-            android:id="@+id/calendar"
-            android:icon="@mipmap/outline_today_black_24"
-            android:title="Calendar" />
+            android:title="@string/dashboard" />
 
         <item
             android:id="@+id/rateUs"
             android:icon="@mipmap/outline_star_rate_black_24"
-            android:title="Rate us" />
+            android:title="@string/rate_us" />
 
         <item
             android:id="@+id/share"
             android:icon="@mipmap/outline_share_black_24"
-            android:title="Share" />
+            android:title="@string/share" />
+
+        <!--<item-->
+        <!--android:id="@+id/calendar"-->
+        <!--android:icon="@mipmap/outline_today_black_24"-->
+        <!--android:title="Calendar" />-->
 
     </group>
 </menu>

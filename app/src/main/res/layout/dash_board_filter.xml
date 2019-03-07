@@ -20,18 +20,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:text="Filter"
+                android:text="@string/dash_board_filter"
+                android:textColor="@color/androidDefaultColor"
                 android:textSize="18sp" />
-
-            <TextView
-                android:id="@+id/clearFilter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_centerInParent="true"
-                android:layout_marginRight="10dp"
-                android:text="clear filter"
-                android:textColor="@color/teal"/>
 
         </RelativeLayout>
 
@@ -64,18 +55,18 @@
                 android:orientation="vertical">
 
                 <RadioButton
-                    android:id="@+id/categoryRadioButton"
+                    android:id="@+id/toDoRadioButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Category"
+                    android:text="@string/todo_text"
                     android:textColor="@color/androidDefaultColor" />
 
                 <RadioButton
-                    android:id="@+id/priorityRadioButton"
+                    android:id="@+id/doneRadioButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="Priority"
+                    android:text="@string/done"
                     android:textColor="@color/androidDefaultColor" />
 
             </RadioGroup>
@@ -86,16 +77,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
                 android:layout_marginTop="10dp"
+                android:layout_marginRight="10dp"
                 android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Date from" />
+                    android:text="@string/starting_date"
+                    android:textColor="@color/androidDefaultColor" />
 
-                <EditText
+                <com.mrbreak.todo.components.CustomEditText
                     android:id="@+id/dateFrom"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -112,16 +104,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="80dp"
                 android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
                 android:layout_marginTop="10dp"
+                android:layout_marginRight="10dp"
                 android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Date to" />
+                    android:text="@string/end_date"
+                    android:textColor="@color/androidDefaultColor" />
 
-                <EditText
+                <com.mrbreak.todo.components.CustomEditText
                     android:id="@+id/dateTo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -145,7 +138,7 @@
         android:layout_gravity="right"
         android:gravity="right"
         android:orientation="horizontal"
-        android:paddingBottom="10dp">
+        android:padding="10dp">
 
         <TextView
             android:id="@+id/cancelFilter"
@@ -154,7 +147,7 @@
             android:layout_marginRight="20dp"
             android:background="@drawable/button_background"
             android:gravity="center"
-            android:text="Cancel"
+            android:text="@string/cancel"
             android:textColor="@color/teal" />
 
         <TextView
@@ -165,7 +158,7 @@
             android:layout_marginRight="10dp"
             android:background="@drawable/teal_button_background"
             android:gravity="center"
-            android:text="Apply filter"
+            android:text="@string/apply_filter"
             android:textColor="@color/white" />
 
     </LinearLayout>

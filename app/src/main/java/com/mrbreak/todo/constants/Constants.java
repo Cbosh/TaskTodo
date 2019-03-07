@@ -4,8 +4,12 @@ public class Constants {
     public static String YEAR_MONTH_DATE_FORMAT = "yyyy-MM-dd";
     public static String YEAR_MONTH_WITH_SPACE_DATE_FORMAT = "yyyy MM dd";
     public static String DAY_MONTH_DATE_FORMAT = "dd MMMM yyyy";
+    public static String DATE_TIME_DATE_FORMAT = "yyyy MMMM dd HHmmss";
     public static String DASH = "-";
     public static String SPACE = " ";
+    public static String STRING_00 = "00";
+    public static String STRING_59 = "59";
+    public static String STRING_23 = "23";
     public static String EMPTY = "";
     public static String COLON = ":";
     public static String MM = "MM";
@@ -32,4 +36,8 @@ public class Constants {
     public static int TODO_LIST = 1;
     public static int DONE_LIST = 2;
     public static int OVER_DUE_LIST = 3;
+
+    public static String FONT_NUNITO_BOLD = "nunitoBold.ttf";
+    public static String FONT_NUNITO_REGULAR = "nunitoRegular.ttf";
+    public static String FONT_NUNITO_SEMIBOLD = "nunitoSemiBold.ttf";
 }

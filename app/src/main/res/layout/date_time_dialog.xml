@@ -26,7 +26,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:gravity="center"
-                    android:text="Due date"
+                    android:text="@string/date_heading"
                     android:textSize="18sp" />
 
             </RelativeLayout>
@@ -37,7 +37,7 @@
                 android:layout_height="5dp"
                 android:layout_below="@+id/header"
                 android:layout_marginTop="10dp"
-                android:background="@drawable/gradient_line"></View>
+                android:background="@drawable/gradient_line" />
 
 
             <LinearLayout
@@ -68,8 +68,8 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/content"
                 android:layout_marginRight="10dp"
-                android:paddingBottom="10dp"
-                android:paddingTop="5dp">
+                android:paddingTop="5dp"
+                android:paddingBottom="10dp">
 
                 <TextView
                     android:id="@+id/cancelButton"
@@ -79,7 +79,7 @@
                     android:layout_toLeftOf="@+id/okButton"
                     android:background="@drawable/button_background"
                     android:gravity="center"
-                    android:text="Cancel"
+                    android:text="@string/cancel"
                     android:textColor="@color/teal" />
 
                 <TextView
@@ -90,7 +90,7 @@
                     android:layout_marginRight="10dp"
                     android:background="@drawable/teal_button_background"
                     android:gravity="center"
-                    android:text="OK"
+                    android:text="@string/ok"
                     android:textColor="@color/white" />
             </RelativeLayout>
 

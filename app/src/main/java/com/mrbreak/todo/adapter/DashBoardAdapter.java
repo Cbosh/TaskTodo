@@ -37,13 +37,13 @@ public class DashBoardAdapter extends RecyclerView.Adapter<DashBoardViewHolder> 
     public void onBindViewHolder(DashBoardViewHolder dashboardViewHolder, int i) {
         if (PriorityEnum.HIGH.getIntValue() == legends.get(i).getLegend()) {
             dashboardViewHolder.legend.setBackground(ContextCompat.getDrawable(
-                    dashboardViewHolder.legend.getContext(), R.drawable.dashboard_high_priority));
+                    dashboardViewHolder.legend.getContext(), R.drawable.high_priority));
         } else if (PriorityEnum.MEDIUM.getIntValue() == legends.get(i).getLegend()) {
             dashboardViewHolder.legend.setBackground(ContextCompat.getDrawable(
-                    dashboardViewHolder.legend.getContext(), R.drawable.dashboard_medium_priority));
+                    dashboardViewHolder.legend.getContext(), R.drawable.medium_priority));
         } else if (PriorityEnum.LOW.getIntValue() == legends.get(i).getLegend()) {
             dashboardViewHolder.legend.setBackground(ContextCompat.getDrawable(
-                    dashboardViewHolder.legend.getContext(), R.drawable.dashboard_low_priority));
+                    dashboardViewHolder.legend.getContext(), R.drawable.low_priority));
         } else if (CategoryEnum.GENERAL.getIntValue() == legends.get(i).getLegend()) {
             dashboardViewHolder.legend.setBackground(ContextCompat.getDrawable(
                     dashboardViewHolder.legend.getContext(), R.drawable.dashboard_general));

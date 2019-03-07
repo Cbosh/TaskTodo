@@ -1,30 +1,20 @@
 package com.mrbreak.todo.fragments;
 
-import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
 import android.app.TimePickerDialog;
-import android.content.ClipData;
-import android.content.ClipboardManager;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.media.RingtoneManager;
-import android.net.Uri;
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
-import android.os.SystemClock;
-import android.support.design.widget.BottomSheetDialog;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
-import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,88 +27,44 @@ import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.RelativeLayout;
-import android.widget.Spinner;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
-import com.birbit.android.jobqueue.JobManager;
-import com.mrbreak.todo.activities.MainActivity;
 import com.mrbreak.todo.R;
-import com.mrbreak.todo.alarmreciever.NotificationPublisher;
+import com.mrbreak.todo.components.CustomTextView;
 import com.mrbreak.todo.constants.Constants;
 import com.mrbreak.todo.customspinners.CategoriesAdapter;
 import com.mrbreak.todo.customspinners.PriorityAdapter;
-import com.mrbreak.todo.events.AddEditToDoStarted;
-import com.mrbreak.todo.events.BackPressedFinished;
-import com.mrbreak.todo.events.BackPressedStarted;
-import com.mrbreak.todo.jobmanager.ToDoJobManager;
-import com.mrbreak.todo.jobs.AddEditToDoJob;
-import com.mrbreak.todo.jobs.DeleteToDoJob;
+import com.mrbreak.todo.databinding.FragmentDetailBinding;
 import com.mrbreak.todo.model.Category;
-import com.mrbreak.todo.model.ToDo;
+import com.mrbreak.todo.repository.model.ToDoModel;
 import com.mrbreak.todo.util.JsonUtil;
-import com.mrbreak.todo.util.SharedPrefUtil;
 import com.mrbreak.todo.util.Utils;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
+import com.mrbreak.todo.view.ChangeHeaderBar;
+import com.mrbreak.todo.viewmodel.ToDoDetailViewModel;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
-
-import static android.content.Context.CLIPBOARD_SERVICE;
-import static io.realm.internal.SyncObjectServerFacade.getApplicationContext;
+import java.util.UUID;
 
 public class ToDoDetailFragment extends Fragment {
-    private JobManager jobManager;
-    private ToDo toDo;
+    private ChangeHeaderBar changeHeaderBar;
+    private ToDoModel toDo;
     private int priority;
     private String category;
     private boolean isDone;
-    private String returnTime;
     private List<Category> categories;
-    private EditText contentEditText;
-    private EditText dueDateEditText;
-    private EditText startTimeEditText;
-    private EditText endTimeEditText;
-    private TextView maxLimit;
 
-    private ImageView doneImageView;
-    private ImageView editImageView;
-    private ImageView deleteImageView;
-
-    private ImageView shareImageView;
-    private ImageView copyImageView;
-    private ImageView lockImageView;
-    private ImageView remindMeImageView;
-    private ImageView notificationImageView;
-
-    private ImageView addCategoryImageView;
-    private ImageView moreImageView;
-    private LinearLayout moreLinearLayout;
-    private LinearLayout deleteLinearLayout;
-    private LinearLayout editLinearLayout;
-    private Spinner prioritySpinner;
-    private Spinner categorySpinner;
-    private Switch doneToggleButton;
-    private boolean firstLoad = true;
-    private String TAG = ToDoDetailFragment.class.getName();
-    public static final String NOTIFICATION_CHANNEL_ID = "10001";
-    private RelativeLayout reminderLayout;
-    private int remindMeBeforeTime;
-    private TextView remindMeTimeTextView;
-    private ToDo createToDo;
+    private ToDoDetailViewModel toDoDetailViewModel;
+    private FragmentDetailBinding binding;
+    private String startTime;
+    private String endTime;
+    private String returnTime;
+    private String formattedDueDate;
 
     public ToDoDetailFragment() {
         // Required empty public constructor
@@ -144,9 +90,21 @@ public class ToDoDetailFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_detail, container, false);
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_detail, container, false);
+        return binding.getRoot();
+    }
 
-        final ToDoJobManager toDoJobManager = new ToDoJobManager();
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        String guid = UUID.randomUUID().toString();
+        if (toDo != null) {
+            guid = toDo.getToDoGuid();
+        }
+
+        ToDoDetailViewModel.Factory factory = new ToDoDetailViewModel.Factory(getActivity().getApplication(), guid);
+        toDoDetailViewModel = ViewModelProviders.of(this, factory).get(ToDoDetailViewModel.class);
 
         String[] priorityNames = {Constants.HIGH, Constants.MEDIUM, Constants.LOW};
         categories = new ArrayList<>();
@@ -156,90 +114,74 @@ public class ToDoDetailFragment extends Fragment {
             e.printStackTrace();
         }
 
-        remindMeTimeTextView = view.findViewById(R.id.alarmSelected);
-        reminderLayout = view.findViewById(R.id.reminder);
-        reminderLayout.setOnClickListener(new View.OnClickListener() {
+        binding.shareLinearLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setReminderDialog();
+                if (toDo == null) {
+                    Utils.displaySnackBar(getString(R.string.cannot_share_empty_task), binding.shareLinearLayout).show();
+                    return;
+                }
+
+                Intent sendIntent = new Intent();
+                sendIntent.setAction(Intent.ACTION_SEND);
+                sendIntent.putExtra(Intent.EXTRA_TEXT, binding.content.getText().toString());
+                sendIntent.setType("text/plain");
+                startActivity(Intent.createChooser(sendIntent, "Task to do"));
             }
         });
 
-        contentEditText = view.findViewById(R.id.content);
-        dueDateEditText = view.findViewById(R.id.dueDate);
-        maxLimit = view.findViewById(R.id.maxLimit);
-        startTimeEditText = view.findViewById(R.id.startTime);
-        endTimeEditText = view.findViewById(R.id.endTime);
+        binding.closeImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getActivity().onBackPressed();
+            }
+        });
 
-        editLinearLayout = view.findViewById(R.id.editLinearLayout);
-        deleteLinearLayout = view.findViewById(R.id.deleteLinearLayout);
-        moreLinearLayout = view.findViewById(R.id.moreLinearLayout);
+        binding.saveTextView.setTextSize(10);
+        binding.deleteTextView.setTextSize(10);
+        binding.shareTextView.setTextSize(10);
+        binding.dueDate.setTextSize(14);
 
-        doneToggleButton = view.findViewById(R.id.doneToggleButton);
-        contentEditText.setImeOptions(EditorInfo.IME_ACTION_DONE);
-        maxLimit.setVisibility(View.GONE);
-        dueDateEditText.setOnClickListener(new View.OnClickListener() {
+        binding.dueDate.setTextSize(14);
+        binding.startTime.setTextSize(14);
+        binding.endTime.setTextSize(14);
+        binding.content.setTextSize(16);
+
+        binding.content.setImeOptions(EditorInfo.IME_ACTION_DONE);
+        binding.maxLimit.setVisibility(View.GONE);
+        binding.dueDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openDateTimePickerDialog();
             }
         });
 
-        startTimeEditText.setOnClickListener(new View.OnClickListener() {
+        binding.startTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showTimePickerDialog(Utils.getCurrentHour(), Utils.getCurrentMinutes(), true);
             }
         });
 
-        endTimeEditText.setOnClickListener(new View.OnClickListener() {
+        binding.endTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showTimePickerDialog(Utils.getCurrentHour(), Utils.getCurrentMinutes(), false);
             }
         });
 
-        remindMeImageView = view.findViewById(R.id.remindMeTime);
-        notificationImageView = view.findViewById(R.id.alarmIcon);
-
-        contentEditText.setOnClickListener(new View.OnClickListener() {
+        binding.content.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openDescriptionDialog();
             }
         });
 
-        dueDateEditText.addTextChangedListener(new TextWatcher() {
-
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start,
-                                      int before, int count) {
-                showDoneImage();
-            }
-        });
-
-        ImageView closeImageView = view.findViewById(R.id.closeImageView);
-        closeImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Utils.dismissKeyBoard(getContext());
-                EventBus.getDefault().post(new BackPressedFinished());
-            }
-        });
-
-        deleteImageView = view.findViewById(R.id.deleteImageView);
-        deleteLinearLayout.setOnClickListener(new View.OnClickListener() {
+        binding.deleteLinearLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (toDo == null) {
+                    Utils.displaySnackBar(getString(R.string.cannot_delete_empty_task), binding.deleteLinearLayout).show();
                     return;
                 }
 
@@ -251,9 +193,8 @@ public class ToDoDetailFragment extends Fragment {
                         R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                jobManager.addJobInBackground(new DeleteToDoJob(EventBus.getDefault(),
-                                        toDo));
-                                EventBus.getDefault().post(new BackPressedFinished());
+                                toDoDetailViewModel.delete(toDo);
+                                getActivity().onBackPressed();
                             }
                         });
 
@@ -270,58 +211,17 @@ public class ToDoDetailFragment extends Fragment {
             }
         });
 
-        moreImageView = view.findViewById(R.id.moreImageView);
-        moreLinearLayout.setOnClickListener(new View.OnClickListener() {
+        binding.saveLinearLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showBottomSheetDialog();
-            }
-        });
-
-        addCategoryImageView = view.findViewById(R.id.addCategory);
-        addCategoryImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            }
-        });
-
-        editImageView = view.findViewById(R.id.editImageView);
-        editLinearLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (toDo != null && toDo.isDone()) {
-                    return;
-                }
-                Utils.dismissKeyBoard(getContext());
-                enableEditText(true);
-            }
-        });
-
-        doneImageView = view.findViewById(R.id.doneImageView);
-        doneImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (toDo != null && toDo.isDone()) {
-                    return;
-                }
-                Utils.dismissKeyBoard(getContext());
                 getToDoDetails();
-
-                //check for overdue
-                if (toDo == null) {
-                    SharedPrefUtil.saveCurrentFragment(getApplicationContext(),
-                            Constants.DONE_LIST);
-                    return;
-                }
-                setReminder();
             }
         });
 
-        categorySpinner = view.findViewById(R.id.categorySpinner);
-        final CategoriesAdapter categoriesAdapter = new CategoriesAdapter(getApplicationContext(), categories);
-        categorySpinner.setAdapter(categoriesAdapter);
+        final CategoriesAdapter categoriesAdapter = new CategoriesAdapter(getContext(), categories);
+        binding.categorySpinner.setAdapter(categoriesAdapter);
 
-        categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        binding.categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 category = categories.get(position).getCategoryName();
@@ -332,14 +232,12 @@ public class ToDoDetailFragment extends Fragment {
             }
         });
 
-        prioritySpinner = view.findViewById(R.id.prioritySpinner);
-        final PriorityAdapter priorityAdapter = new PriorityAdapter(getApplicationContext(), priorityNames);
-        prioritySpinner.setAdapter(priorityAdapter);
+        final PriorityAdapter priorityAdapter = new PriorityAdapter(getContext(), priorityNames);
+        binding.prioritySpinner.setAdapter(priorityAdapter);
 
-        prioritySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        binding.prioritySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                //TODO: priority object with the name, id
                 priority = position;
             }
 
@@ -348,291 +246,94 @@ public class ToDoDetailFragment extends Fragment {
             }
         });
 
-        doneToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        binding.doneToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
                 isDone = isChecked;
-                if (!firstLoad && isChecked) {
-                    Utils.displaySnackBar("Well done for completing this task",
-                            doneToggleButton).show();
-                    toDo.setCompletedDate(Utils.convertDateToString(new Date()));
-                } else {
-                    // toDo.setCompletedDate(Utils.convertDateToString(new Date()));
-                    firstLoad = false;
+                if (isChecked && isValidInput() && toDo != null) {
+                    Utils.displaySnackBar(getString(R.string.task_complete_message),
+                            binding.doneToggleButton).show();
+                    toDo.setDone(isDone);
+                    toDo.setCompletedDate(Utils.getCompletedDateTime());
+                    toDoDetailViewModel.update(toDo);
                 }
             }
         });
 
-        closeImageView.setColorFilter(ContextCompat.getColor(getContext(), R.color.black));
         setImageColor();
-        jobManager = toDoJobManager.getJobManager(getContext());
 
-        return view;
+        binding.setTodomodel(toDo);
+        binding.setTododetail(toDoDetailViewModel);
+
+        observeViewModel(toDoDetailViewModel);
     }
 
-    private void setReminder() {
-        SharedPrefUtil.saveCurrentFragment(getApplicationContext(),
-                Constants.TODO_LIST);
-        Class<?> cls = MainActivity.class;
-        Intent intent = new Intent(getContext(), cls);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    private void observeViewModel(final ToDoDetailViewModel viewModel) {
+        viewModel.getToDo().observe(this, new Observer<ToDoModel>() {
 
-        if (createToDo != null) {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                scheduleNotification(showNotification(getContext(), createToDo.getCategory(),
-                        createToDo.getContent(), intent),
-                        remindMeBeforeTime);
-            } else {
-                scheduleNotification(getNotification(createToDo.getContent()), remindMeBeforeTime);
+            @Override
+            public void onChanged(@Nullable ToDoModel toDoModel) {
+                if (toDoModel != null) {
+                    toDoDetailViewModel.setToDoModelObservableField(toDoModel);
+                }
             }
+        });
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof ChangeHeaderBar) {
+            changeHeaderBar = (ChangeHeaderBar) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement ChangeHeaderBar");
         }
-    }
-
-    public void showBottomSheetDialog() {
-        View view = getLayoutInflater().inflate(R.layout.fragment_bottom_sheet, null);
-
-        shareImageView = view.findViewById(R.id.share);
-        copyImageView = view.findViewById(R.id.copy);
-        lockImageView = view.findViewById(R.id.lock);
-
-        LinearLayout shareLinearLayout = view.findViewById(R.id.shareLinearLayout);
-        LinearLayout copyLinearLayout = view.findViewById(R.id.copyLinearLayout);
-        LinearLayout lockLinearLayout = view.findViewById(R.id.lockLinearLayout);
-
-        setBottomSheetImageColor();
-
-        final BottomSheetDialog dialog = new BottomSheetDialog(getContext());
-
-        shareLinearLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent sendIntent = new Intent();
-                sendIntent.setAction(Intent.ACTION_SEND);
-                sendIntent.putExtra(Intent.EXTRA_TEXT,
-                        toDo.getContent());
-                sendIntent.setType("text/plain");
-                startActivity(Intent.createChooser(sendIntent, "Task"));
-                dialog.dismiss();
-            }
-        });
-
-        copyLinearLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ClipboardManager myClipboard = (ClipboardManager)
-                        getContext().getSystemService(CLIPBOARD_SERVICE);
-                ClipData myClip = ClipData.newPlainText("text", toDo.getContent());
-                myClipboard.setPrimaryClip(myClip);
-                Toast.makeText(getApplicationContext(), "Text Copied",
-                        Toast.LENGTH_SHORT).show();
-                dialog.dismiss();
-            }
-        });
-
-        lockLinearLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //lock and save
-                dialog.dismiss();
-            }
-        });
-
-        dialog.setContentView(view);
-        dialog.show();
-    }
-
-
-    private void setBottomSheetImageColor() {
-        copyImageView.setColorFilter(ContextCompat.getColor(getContext(), R.color.teal));
-        lockImageView.setColorFilter(ContextCompat.getColor(getContext(), R.color.teal));
-        shareImageView.setColorFilter(ContextCompat.getColor(getContext(), R.color.teal));
     }
 
     private void setImageColor() {
-        doneImageView.setColorFilter(ContextCompat.getColor(getContext(), R.color.black));
-        editImageView.setColorFilter(ContextCompat.getColor(getContext(), R.color.teal));
-        addCategoryImageView.setColorFilter(ContextCompat.getColor(getContext(), R.color.teal));
-        moreImageView.setColorFilter(ContextCompat.getColor(getContext(), R.color.teal));
-        deleteImageView.setColorFilter(ContextCompat.getColor(getContext(), R.color.teal));
-
-        remindMeImageView.setColorFilter(ContextCompat.getColor(getContext(), R.color.androidDefaultColor));
-        notificationImageView.setColorFilter(ContextCompat.getColor(getContext(), R.color.androidDefaultColor));
-    }
-
-
-    private void showDoneImage() {
-        if (isInputValid() || toDo == null) {
-            return;
-        }
-
-        if (!TextUtils.isEmpty(toDo.getContent()) && !TextUtils.isEmpty(contentEditText.getText())) {
-            if (!toDo.getContent().equalsIgnoreCase(contentEditText.getText().toString().trim())) {
-                doneImageView.setEnabled(true);
-                return;
-            }
-        }
-
-        if (!TextUtils.isEmpty(toDo.getDueDate()) && !TextUtils.isEmpty(dueDateEditText.getText())) {
-            if (!toDo.getDueDate().equalsIgnoreCase(dueDateEditText.getText().toString().trim())) {
-                doneImageView.setEnabled(true);
-            }
-        }
-    }
-
-    private int getHours(Date date) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        int hours = cal.get(Calendar.HOUR_OF_DAY);
-
-        return hours;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        EventBus.getDefault().register(this);
-    }
-
-    @Override
-    public void onStop() {
-        EventBus.getDefault().unregister(this);
-        super.onStop();
+        binding.saveImageView.setColorFilter(ContextCompat.getColor(getContext(), R.color.teal));
+        binding.shareImageView.setColorFilter(ContextCompat.getColor(getContext(), R.color.teal));
+        binding.moreImageView.setColorFilter(ContextCompat.getColor(getContext(), R.color.teal));
+        binding.deleteImageView.setColorFilter(ContextCompat.getColor(getContext(), R.color.teal));
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
+        changeHeaderBar.changeHeaderBar();
         Utils.dismissKeyBoard(getContext());
 
         if (getArguments() != null && getArguments().containsKey(Constants.ISEDIT) &&
                 getArguments().getBoolean(Constants.ISEDIT)) {
-            doneImageView.setEnabled(true);
-            doneToggleButton.setEnabled(true);
-            deleteImageView.setEnabled(true);
-            editImageView.setEnabled(true);
-            enableEditText(false);
+            binding.saveImageView.setEnabled(true);
+
+            binding.deleteImageView.setEnabled(true);
+            binding.editImageView.setEnabled(true);
         } else {
-            enableEditText(true);
-            deleteImageView.setEnabled(false);
-            doneToggleButton.setEnabled(false);
-            editImageView.setEnabled(false);
-            maxLimit.setVisibility(View.GONE);
-            editImageView.setVisibility(View.VISIBLE);
-            deleteImageView.setVisibility(View.VISIBLE);
+            binding.doneToggleButton.setEnabled(false);
+            binding.deleteImageView.setEnabled(false);
+            binding.editImageView.setEnabled(false);
+            binding.maxLimit.setVisibility(View.GONE);
+            binding.deleteImageView.setVisibility(View.VISIBLE);
         }
 
-        boolean enabled = false;
         if (toDo != null) {
             displayDetails(toDo);
-//            if (Utils.getDaysDifference(new Date(), Utils.convertStringToDate(toDo.getDueDate())) == 0) {
-//                enabled = true;
-//            }
-        }
-    }
-
-    private void enableEditText(boolean enabled) {
-        categorySpinner.setEnabled(enabled);
-        prioritySpinner.setEnabled(enabled);
-        dueDateEditText.setEnabled(enabled);
-        contentEditText.setEnabled(enabled);
-        startTimeEditText.setEnabled(enabled);
-        endTimeEditText.setEnabled(enabled);
-        reminderLayout.setEnabled(enabled);
-        if (getArguments() != null && getArguments().containsKey(Constants.ISEDIT)) {
-            doneToggleButton.setEnabled(enabled);
-        }
-    }
-
-    private void scheduleNotification(Notification notification, int delay) {
-        Intent notificationIntent = new Intent(getContext(), NotificationPublisher.class);
-        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, createToDo.getId());
-        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(getContext(),
-                0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        long futureInMillis = SystemClock.elapsedRealtime() + delay;
-        AlarmManager alarmManager = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
-        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
-    }
-
-
-    private Notification getNotification(String content) {
-        Class<?> cls = MainActivity.class;
-
-        Intent intent = new Intent(getContext(), cls);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(getContext());
-        stackBuilder.addParentStack(cls);
-        stackBuilder.addNextIntent(intent);
-
-        Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        int DAILY_REMINDER_REQUEST_CODE = 1;
-        PendingIntent pendingIntent = stackBuilder.getPendingIntent(
-                DAILY_REMINDER_REQUEST_CODE, PendingIntent.FLAG_UPDATE_CURRENT);
-        Notification.Builder builder = new Notification.Builder(getContext());
-        builder.setContentTitle("Scheduled Notification");
-        builder.setContentText(content);
-        builder.setSound(alarmSound).setSmallIcon(R.mipmap.ic_launcher_round);
-        builder.setSmallIcon(R.drawable.ic_launcher_foreground);
-        builder.setContentIntent(pendingIntent);
-
-        return builder.build();
-    }
-
-
-    public Notification showNotification(Context context, String title, String body, Intent intent) {
-        NotificationManager notificationManager = (NotificationManager)
-                context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-        int notificationId = 1;
-        String channelId = "channel-01";
-        String channelName = "Todo";
-        int importance = NotificationManager.IMPORTANCE_HIGH;
-
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            NotificationChannel mChannel = new NotificationChannel(
-                    channelId, channelName, importance);
-            notificationManager.createNotificationChannel(mChannel);
         }
 
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-        stackBuilder.addNextIntent(intent);
-
-        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0,
-                PendingIntent.FLAG_UPDATE_CURRENT);
-
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, channelId)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(title)
-                .setContentText(body)
-                .addAction(R.mipmap.ic_launcher, "Done", resultPendingIntent)  // #1
-                .addAction(R.mipmap.ic_launcher, "Edit", resultPendingIntent)  // #2
-                .setStyle(new NotificationCompat.BigTextStyle()
-                        .bigText(body));
-        mBuilder.setContentIntent(resultPendingIntent);
-
-        return mBuilder.build();
+        binding.setTodomodel(toDo);
     }
 
     private void showTimePickerDialog(int h, int m, final boolean isStartTime) {
         LayoutInflater inflater = getLayoutInflater();
         final View view = inflater.inflate(R.layout.timepicker_header, null);
 
-        TimePickerDialog builder = new TimePickerDialog(getContext(), R.style.NewDialog,
+        TimePickerDialog builder = new TimePickerDialog(getContext(),
                 new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int hour, int min) {
-
-//                        if (!Utils.isHourValid(hour)) {
-//                            Utils.displaySnackBar("Please select valid time", timePicker);
-//                        } else {
-//                            if (!Utils.isMinutesValid(min)) {
-//                                Utils.displaySnackBar("Please select valid time", timePicker);
-//                                return;
-//                            }
-//                        }
-
                         String hours = String.valueOf(hour);
                         if (hours.length() == 1) {
                             hours = Constants.ZERO_STRING + hours;
@@ -651,14 +352,20 @@ public class ToDoDetailFragment extends Fragment {
                             daytime = Constants.SPACE + Constants.AM;
                         }
 
+                        if (isStartTime) {
+                            startTime = time + daytime;
+                        } else {
+                            endTime = time + daytime;
+                        }
+
                         try {
                             SimpleDateFormat simpleDateFormat = new SimpleDateFormat(Constants.TIME_HH_MM_PATTERN);
                             Date date = simpleDateFormat.parse(time);
                             returnTime = new SimpleDateFormat(Constants.TIME_KK_MM_PATTERN).format(date) + daytime;
                             if (isStartTime) {
-                                startTimeEditText.setText(returnTime);
+                                binding.startTime.setText(startTime);
                             } else {
-                                endTimeEditText.setText(returnTime);
+                                binding.endTime.setText(endTime);
                             }
                         } catch (final ParseException e) {
                             e.printStackTrace();
@@ -666,69 +373,101 @@ public class ToDoDetailFragment extends Fragment {
                     }
                 }, h, m, true);
         builder.setCustomTitle(view);
+        builder.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
         builder.show();
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
     }
 
     private void getToDoDetails() {
-        if (isInputValid()) {
+        if (!isValidInput()) {
+            Utils.displaySnackBar(getString(R.string.add_task_details), binding.saveLinearLayout).show();
             return;
         }
-        //  Date currentTime = Calendar.getInstance().getStartTime();
-        ToDo newToDo = new ToDo();
-        if (toDo != null) {
-            newToDo.setId(toDo.getId());
+
+        if (toDo != null && toDo.isDone()) {
+            Utils.displaySnackBar(getString(R.string.update_saved_task_message),
+                    binding.doneToggleButton).show();
+            return;
+        }
+
+        ToDoModel newToDo = new ToDoModel();
+
+        if (isDone) {
+            newToDo.setCompletedDate(Utils.getCompletedDateTime());
         }
 
         newToDo.setCategory(category);
-        newToDo.setContent(contentEditText.getText().toString().trim());
-        newToDo.setDueDate(dueDateEditText.getText().toString().trim());
-        newToDo.setStartTime(startTimeEditText.getText().toString().trim());
-        newToDo.setEndTime(endTimeEditText.getText().toString().trim());
+        newToDo.setContent(binding.content.getText().toString().trim());
+
+        String minutes = String.valueOf(Utils.getCurrentHour());
+        String hours = String.valueOf(Utils.getCurrentHour());
+
+        if (minutes.length() == 1) {
+            minutes = Constants.ZERO_STRING + minutes;
+        }
+
+        String currentTime = "";
+        if (Utils.getCurrentHour() >= 12) {
+            currentTime = hours + Constants.COLON + minutes + Constants.SPACE + Constants.PM;
+        } else {
+            currentTime = hours + Constants.COLON + minutes + Constants.SPACE + Constants.AM;
+        }
+
+        String strStartFrom = Utils.getFormattedTime(binding.dueDate.getText().toString().trim(), currentTime);
+
+        newToDo.setDueDate(strStartFrom);
+
+        if (!TextUtils.isEmpty(startTime)) {
+            newToDo.setStartTime(Utils.getFormattedTime(binding.dueDate.getText().toString().trim(), startTime));
+        } else {
+            newToDo.setStartTime(toDo.getStartTime());
+        }
+
+        if (!TextUtils.isEmpty(endTime)) {
+            newToDo.setEndTime(Utils.getFormattedTime(binding.dueDate.getText().toString().trim(), endTime));
+        } else {
+            newToDo.setEndTime(toDo.getEndTime());
+        }
+
         newToDo.setPriority(priority);
         newToDo.setDone(isDone);
 
-        if (remindMeBeforeTime == 0) {
-            remindMeBeforeTime = 15;
+        if (toDo != null) {
+            newToDo.setCreatedDate(toDo.getCreatedDate());
+            newToDo.setToDoGuid(toDo.getToDoGuid());
+            newToDo.setId(toDo.getId());
+            toDoDetailViewModel.update(newToDo);
+        } else {
+            newToDo.setCreatedDate(Utils.convertDateToString(new Date()));
+            newToDo.setToDoGuid(UUID.randomUUID().toString());
+            toDoDetailViewModel.insert(newToDo);
         }
 
-        newToDo.setRemindMeBefore(remindMeBeforeTime);
-        if (isDone) {
-            newToDo.setCompletedDate(Utils.convertDateToString(new Date()));
-        }
-        //update this
-        newToDo.setCreatedDate(Utils.convertDateToString(new Date()));
-
-        int days = Utils.getDaysDifference(new Date(), Utils.convertStringToDate(newToDo.getDueDate()));
-        //  scheduleNotification(getNotification( android:layout_marginLeft="20dp");
-
-        createToDo = newToDo;
-
-        EventBus.getDefault().post(new AddEditToDoStarted(
-                EventBus.getDefault(), newToDo));
+        getActivity().onBackPressed();
     }
 
-    private boolean isInputValid() {
-        return TextUtils.isEmpty(contentEditText.getText()) ||
-                TextUtils.isEmpty(dueDateEditText.getText());
+    //when done is clicked update db with model data and done indicator
+    private ToDoModel assembleData() {
+
+        return new ToDoModel();
     }
 
-    private void displayDetails(ToDo toDo) {
-        contentEditText.setText(toDo.getContent());
-        dueDateEditText.setText(toDo.getDueDate());
-        startTimeEditText.setText(toDo.getStartTime());
-        endTimeEditText.setText(toDo.getEndTime());
-        prioritySpinner.setSelection(toDo.getPriority());
-        doneToggleButton.setChecked(toDo.isDone());
-        String remindMe = toDo.getRemindMeBefore() + " minutes before";
-        remindMeTimeTextView.setText(remindMe);
+    private boolean isValidInput() {
+        return !TextUtils.isEmpty(binding.content.getText()) &&
+                !TextUtils.isEmpty(binding.dueDate.getText()) &&
+                !TextUtils.isEmpty(binding.startTime.getText()) &&
+                !TextUtils.isEmpty(binding.endTime.getText());
+    }
+
+    private void displayDetails(ToDoModel toDo) {
+        binding.prioritySpinner.setSelection(toDo.getPriority());
         for (int i = 0; i < categories.size(); i++) {
             if (categories.get(i).getCategoryName().contains(toDo.getCategory())) {
-                categorySpinner.setSelection(i);
+                binding.categorySpinner.setSelection(i);
             }
         }
 
@@ -737,16 +476,15 @@ public class ToDoDetailFragment extends Fragment {
         }
     }
 
-
-    @Subscribe
-    public void onEvent(AddEditToDoStarted event) {
-        jobManager.addJobInBackground(new AddEditToDoJob(EventBus.getDefault(), event.getToDo()));
-        getActivity().finish();
-    }
-
-    @Subscribe
-    public void onEvent(BackPressedStarted e) {
-        getActivity().finish();
+    private void enableEditText(boolean enabled) {
+        binding.categorySpinner.setEnabled(enabled);
+        binding.content.setEnabled(enabled);
+        binding.dueDate.setEnabled(enabled);
+        binding.startTime.setEnabled(enabled);
+        binding.endTime.setEnabled(enabled);
+        binding.prioritySpinner.setEnabled(enabled);
+        binding.doneToggleButton.setEnabled(enabled);
+        binding.saveImageView.setEnabled(enabled);
     }
 
     private void openDateTimePickerDialog() {
@@ -759,14 +497,12 @@ public class ToDoDetailFragment extends Fragment {
         TextView cancelButton = dialog.findViewById(R.id.cancelButton);
         TextView okButton = dialog.findViewById(R.id.okButton);
 
-        // Set Dialog date and time
         myDatePicker.updateDate(myDatePicker.getYear(), myDatePicker.getMonth(), myDatePicker.getDayOfMonth());
         myDatePicker.setMinDate(System.currentTimeMillis() - 1000);
 
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //clearAllFocus();
                 dialog.dismiss();
             }
         });
@@ -783,30 +519,35 @@ public class ToDoDetailFragment extends Fragment {
                 }
                 int dayOfMonth = myDatePicker.getDayOfMonth();
                 String selectedDate = year + Constants.SPACE + Constants.ZERO_STRING + monthOfYear + Constants.SPACE + dayOfMonth;
-                dueDateEditText.setText(Utils.getOutputDateFormt(selectedDate));
-                //  onDateSet(year, monthOfYear, dayOfMonth);
+                binding.dueDate.setText(Utils.getOutputDateFormt(selectedDate));
                 dialog.dismiss();
             }
         });
 
         WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
         layoutParams.copyFrom(dialog.getWindow().getAttributes());
-        layoutParams.width = 1000;
+        layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
+        ;
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
-
+        dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
         dialog.show();
-        dialog.getWindow().setAttributes(layoutParams);
     }
 
     private void openDescriptionDialog() {
-        final Dialog dialog = new Dialog(getContext());
+        final Dialog dialog;
+        dialog = new Dialog(getContext(), R.style.DialogSlideAnim);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.description_dialog);
 
         final EditText description = dialog.findViewById(R.id.description);
+        final CustomTextView header = dialog.findViewById(R.id.headerTextView);
+        header.setTextSize(18);
+
         Button saveButton = dialog.findViewById(R.id.saveButton);
         ImageView closeImageView = dialog.findViewById(R.id.close);
-        description.setText(contentEditText.getText().toString());
+        ImageView saveImageView = dialog.findViewById(R.id.saveDescription);
+        description.setText(binding.content.getText().toString());
+        description.setSelection(description.getText().length());
 
         closeImageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -815,11 +556,21 @@ public class ToDoDetailFragment extends Fragment {
             }
         });
 
+        saveImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!TextUtils.isEmpty(description.getText().toString())) {
+                    binding.content.setText(description.getText().toString().trim());
+                }
+                dialog.dismiss();
+            }
+        });
+
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (!TextUtils.isEmpty(description.getText().toString())) {
-                    contentEditText.setText(description.getText().toString().trim());
+                    binding.content.setText(description.getText().toString().trim());
                 }
 
                 dialog.dismiss();
@@ -830,84 +581,7 @@ public class ToDoDetailFragment extends Fragment {
         layoutParams.copyFrom(dialog.getWindow().getAttributes());
         layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
-
         dialog.show();
         dialog.getWindow().setAttributes(layoutParams);
-    }
-
-    private void setReminderDialog() {
-        final Dialog dialog = new Dialog(getContext());
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(R.layout.reminder_dialog);
-
-        TextView cancelTextView = dialog.findViewById(R.id.cancelTextView);
-        TextView saveTextView = dialog.findViewById(R.id.saveTextView);
-
-        saveTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String remindMeSelectedTime = remindMeBeforeTime + " minutes before";
-                remindMeTimeTextView.setText(remindMeSelectedTime);
-                dialog.dismiss();
-            }
-        });
-
-        cancelTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                remindMeBeforeTime = 15;
-                dialog.dismiss();
-            }
-        });
-
-        RadioButton fiveMinutesRadioButton = dialog.findViewById(R.id.fiveMinutesRadioButton);
-        RadioButton tenMinutesRadioButton = dialog.findViewById(R.id.tenMinutesRadioButton);
-        RadioButton fifteenMinutesRadioButton = dialog.findViewById(R.id.fifteenMinutesRadioButton);
-        RadioButton thirtyMinutesRadioButton = dialog.findViewById(R.id.thirtyMinutesRadioButton);
-
-        fiveMinutesRadioButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                remindMeBeforeTime = 5;
-            }
-        });
-
-        tenMinutesRadioButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                remindMeBeforeTime = 10;
-            }
-        });
-
-        fifteenMinutesRadioButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                remindMeBeforeTime = 15;
-            }
-        });
-
-        thirtyMinutesRadioButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                remindMeBeforeTime = 30;
-            }
-        });
-
-        WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
-        layoutParams.copyFrom(dialog.getWindow().getAttributes());
-        layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
-        layoutParams.height = 1100;
-
-        dialog.show();
-        dialog.getWindow().setAttributes(layoutParams);
-    }
-
-    public void onDateSet(int year, int month, int day) {
-        Calendar userAge = new GregorianCalendar(year, month, day);
-        Calendar minAdultAge = new GregorianCalendar();
-        minAdultAge.add(Calendar.YEAR, -18);
-
-        if (minAdultAge.before(userAge)) {
-        }
     }
 }

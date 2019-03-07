@@ -1,14 +1,22 @@
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/toolBarLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     tools:context="com.mrbreak.todo.fragments.ToDoListFragment">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:visibility="gone"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/white"/>
+        android:background="@color/off_white"
+        android:visibility="gone" />
 
-</android.support.constraint.ConstraintLayout>
+    <View
+        android:id="@+id/gradientLine"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="@drawable/gradient_line" />
+
+</LinearLayout>
