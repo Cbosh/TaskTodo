@@ -1,4 +1,4 @@
-package com.mrbreak.todo.fragments;
+package com.mrbreak.todo.view.fragments;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.mrbreak.todo.R;
-import com.mrbreak.todo.util.Utils;
+import com.mrbreak.todo.util.DateUtil;
 
 public class MessagesFragment extends Fragment {
 
@@ -43,7 +43,7 @@ public class MessagesFragment extends Fragment {
         closeImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Utils.dismissKeyBoard(getContext());
+                DateUtil.dismissKeyBoard(getContext());
                getActivity().finish();
             }
         });

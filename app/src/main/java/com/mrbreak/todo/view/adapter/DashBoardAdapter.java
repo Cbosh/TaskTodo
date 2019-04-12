@@ -1,4 +1,4 @@
-package com.mrbreak.todo.adapter;
+package com.mrbreak.todo.view.adapter;
 
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
@@ -10,20 +10,21 @@ import android.widget.TextView;
 import com.mrbreak.todo.R;
 import com.mrbreak.todo.enums.CategoryEnum;
 import com.mrbreak.todo.enums.PriorityEnum;
-import com.mrbreak.todo.model.Legend;
+import com.mrbreak.todo.model.LegendModel;
 
 import java.util.List;
 
 public class DashBoardAdapter extends RecyclerView.Adapter<DashBoardViewHolder> {
 
-    private List<Legend> legends;
+    private List<LegendModel> legends;
     private OnItemClickListener onItemClickListener;
 
+    //TODO: when item click load all todo's related to the selected item.
     public interface OnItemClickListener {
         void onItemClick(View view, int position);
     }
 
-    public DashBoardAdapter(List<Legend> legends, OnItemClickListener onItemClickListener) {
+    public DashBoardAdapter(List<LegendModel> legends, OnItemClickListener onItemClickListener) {
         this.legends = legends;
         this.onItemClickListener = onItemClickListener;
     }
@@ -98,12 +99,12 @@ public class DashBoardAdapter extends RecyclerView.Adapter<DashBoardViewHolder> 
         super.onAttachedToRecyclerView(recyclerView);
     }
 
-    public void remove(Legend object) {
+    public void remove(LegendModel object) {
         legends.remove(object);
         notifyDataSetChanged();
     }
 
-    public List<Legend> getLegends() {
+    public List<LegendModel> getLegends() {
         return legends;
     }
 

@@ -1,4 +1,4 @@
-package com.mrbreak.todo.fragments;
+package com.mrbreak.todo.view.fragments;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
@@ -21,7 +21,7 @@ import com.alamkanak.weekview.WeekViewEvent;
 import com.mrbreak.todo.R;
 import com.mrbreak.todo.constants.Constants;
 import com.mrbreak.todo.repository.model.ToDoModel;
-import com.mrbreak.todo.util.Utils;
+import com.mrbreak.todo.util.DateUtil;
 import com.mrbreak.todo.viewmodel.CalendarListViewModel;
 
 import java.util.ArrayList;
@@ -99,13 +99,13 @@ public class CalendarFragment extends Fragment {
                 if (toDos != null && toDos.size() > 0) {
                     for (ToDoModel todo : toDos) {
                         Calendar calendar = Calendar.getInstance();
-                        Date date = Utils.convertStringToDate(todo.getDueDate());
+                        Date date = DateUtil.convertStringToDate(todo.getDueDate());
                         calendar.setTime(date);
                         int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
                         int year = calendar.get(Calendar.YEAR);
 
                         int month = Integer.valueOf((String) DateFormat.format(Constants.MM,
-                                Utils.convertStringToDate(todo.getDueDate())));
+                                DateUtil.convertStringToDate(todo.getDueDate())));
                         if (newMonth == month) {
                             Calendar startTime = Calendar.getInstance();
 

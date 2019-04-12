@@ -17,13 +17,9 @@ public interface ToDoDao {
     @Query("SELECT * from todo_table  WHERE done =:done")
     LiveData<List<ToDoModel>> getToDoList(boolean done);
 
-//    @Query("SELECT * from todo_table  WHERE done =:done AND start_time BETWEEN :startDate AND :endDate")
-//    List<ToDoModel> getFilteredToDoList(boolean done, String startDate, String endDate);
-
     @Query("SELECT * from todo_table  WHERE done =:done")
     List<ToDoModel> getFilteredToDoList(boolean done);
 
-    //filter by start and and date
     @Query("SELECT * from todo_table")
     LiveData<List<ToDoModel>> getAllToDos();
 

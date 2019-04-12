@@ -1,4 +1,4 @@
-package com.mrbreak.todo.fragments;
+package com.mrbreak.todo.view.fragments;
 
 import android.app.Dialog;
 import android.arch.lifecycle.Observer;
@@ -25,16 +25,16 @@ import android.widget.TextView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mrbreak.todo.R;
-import com.mrbreak.todo.adapter.DashBoardAdapter;
+import com.mrbreak.todo.util.DateUtil;
+import com.mrbreak.todo.view.adapter.DashBoardAdapter;
 import com.mrbreak.todo.constants.Constants;
 import com.mrbreak.todo.databinding.FragmentDashBoardBinding;
 import com.mrbreak.todo.enums.CategoryEnum;
 import com.mrbreak.todo.enums.FilterEnum;
 import com.mrbreak.todo.enums.PriorityEnum;
 import com.mrbreak.todo.model.DashBoardFilterModel;
-import com.mrbreak.todo.model.Legend;
+import com.mrbreak.todo.model.LegendModel;
 import com.mrbreak.todo.repository.model.ToDoModel;
-import com.mrbreak.todo.util.Utils;
 import com.mrbreak.todo.viewmodel.DashBoardListViewModel;
 
 import org.eazegraph.lib.models.PieModel;
@@ -132,13 +132,13 @@ public class DashBoardFragment extends Fragment {
         int medium = Math.round(getPercentageByPriority(PriorityEnum.MEDIUM.getIntValue(), dateFromString, dateToString));
         int low = Math.round(getPercentageByPriority(PriorityEnum.LOW.getIntValue(), dateFromString, dateToString));
 
-        List<Legend> legends = new ArrayList<>();
+        List<LegendModel> legends = new ArrayList<>();
         String stringBuilder;
 
         if (high > 0) {
             stringBuilder = Constants.SPACE +
                     Constants.HIGH + Constants.PRIORITY;
-            Legend legend = new Legend(PriorityEnum.HIGH.getIntValue(),
+            LegendModel legend = new LegendModel(PriorityEnum.HIGH.getIntValue(),
                     high + Constants.PERCENTAGE + stringBuilder);
             legends.add(legend);
         }
@@ -146,7 +146,7 @@ public class DashBoardFragment extends Fragment {
         if (medium > 0) {
             stringBuilder = Constants.SPACE +
                     Constants.MEDIUM + Constants.PRIORITY;
-            Legend legend = new Legend(PriorityEnum.MEDIUM.getIntValue(),
+            LegendModel legend = new LegendModel(PriorityEnum.MEDIUM.getIntValue(),
                     medium + Constants.PERCENTAGE + stringBuilder);
             legends.add(legend);
         }
@@ -154,7 +154,7 @@ public class DashBoardFragment extends Fragment {
         if (low > 0) {
             stringBuilder = Constants.SPACE +
                     Constants.LOW + Constants.PRIORITY;
-            Legend legend = new Legend(PriorityEnum.LOW.getIntValue(),
+            LegendModel legend = new LegendModel(PriorityEnum.LOW.getIntValue(),
                     low + Constants.PERCENTAGE + stringBuilder);
             legends.add(legend);
         }
@@ -172,7 +172,7 @@ public class DashBoardFragment extends Fragment {
 
             stringBuilder = CategoryEnum.WORK.toString() +
                     Constants.SPACE + work + Constants.PERCENTAGE;
-            Legend legend = new Legend(CategoryEnum.WORK.getIntValue(), stringBuilder);
+            LegendModel legend = new LegendModel(CategoryEnum.WORK.getIntValue(), stringBuilder);
             legends.add(legend);
         }
 
@@ -184,7 +184,7 @@ public class DashBoardFragment extends Fragment {
 
             stringBuilder = CategoryEnum.STUDIES.toString() +
                     Constants.SPACE + studies + Constants.PERCENTAGE;
-            Legend legend = new Legend(CategoryEnum.STUDIES.getIntValue(), stringBuilder);
+            LegendModel legend = new LegendModel(CategoryEnum.STUDIES.getIntValue(), stringBuilder);
             legends.add(legend);
         }
 
@@ -196,7 +196,7 @@ public class DashBoardFragment extends Fragment {
 
             stringBuilder = CategoryEnum.PERSONAL.toString() +
                     Constants.SPACE + personal + Constants.PERCENTAGE;
-            Legend legend = new Legend(CategoryEnum.PERSONAL.getIntValue(), stringBuilder);
+            LegendModel legend = new LegendModel(CategoryEnum.PERSONAL.getIntValue(), stringBuilder);
             legends.add(legend);
         }
 
@@ -208,7 +208,7 @@ public class DashBoardFragment extends Fragment {
 
             stringBuilder = CategoryEnum.GENERAL.toString() +
                     Constants.SPACE + general + Constants.PERCENTAGE;
-            Legend legend = new Legend(CategoryEnum.GENERAL.getIntValue(), stringBuilder);
+            LegendModel legend = new LegendModel(CategoryEnum.GENERAL.getIntValue(), stringBuilder);
             legends.add(legend);
         }
 
@@ -220,7 +220,7 @@ public class DashBoardFragment extends Fragment {
 
             stringBuilder = CategoryEnum.BUSINESS.toString() +
                     Constants.SPACE + business + Constants.PERCENTAGE;
-            Legend legend = new Legend(CategoryEnum.BUSINESS.getIntValue(), stringBuilder);
+            LegendModel legend = new LegendModel(CategoryEnum.BUSINESS.getIntValue(), stringBuilder);
             legends.add(legend);
         }
 
@@ -232,7 +232,7 @@ public class DashBoardFragment extends Fragment {
 
     private float getPercentageByPriority(int priority, String dateFrom, String dateTo) {
         if (toDoList != null && toDoList.size() > 0) {
-            float numberOfItems = Utils.getNumberOfItemsByPriority(priority, toDoList, dateFrom, dateTo);
+            float numberOfItems = DateUtil.getNumberOfItemsByPriority(priority, toDoList, dateFrom, dateTo);
             if (numberOfItems != 0) {
                 return (numberOfItems / toDoList.size()) * 100;
             }
@@ -242,7 +242,7 @@ public class DashBoardFragment extends Fragment {
 
     private float getPercentageByCategory(String category, String dateFrom, String dateTo) {
         if (toDoList != null && toDoList.size() > 0) {
-            float numberOfItems = Utils.getNumberOfItemsByCategory(category, toDoList, dateFrom, dateTo);
+            float numberOfItems = DateUtil.getNumberOfItemsByCategory(category, toDoList, dateFrom, dateTo);
             if (numberOfItems != 0) {
                 return (numberOfItems / toDoList.size()) * 100;
             }
@@ -294,8 +294,8 @@ public class DashBoardFragment extends Fragment {
                 String endTime = Constants.STRING_23 + Constants.COLON + Constants.STRING_59
                         + Constants.SPACE + Constants.PM;
 
-                String dateFrom = Utils.getFormattedTime(dateFromEditText.getText().toString(), startTime);
-                String dateTo = Utils.getFormattedTime(dateToEditText.getText().toString(), endTime);
+                String dateFrom = DateUtil.getFormattedTime(dateFromEditText.getText().toString(), startTime);
+                String dateTo = DateUtil.getFormattedTime(dateToEditText.getText().toString(), endTime);
 
                 if (toDoRadioButton.isChecked()) {
                     loadData(false, dateFrom, dateTo);
@@ -328,7 +328,7 @@ public class DashBoardFragment extends Fragment {
         toDoList = dashBoardListViewModel.getLiveDataList(filtering);
         if (toDoList == null || toDoList.size() == 0) {
             binding.emptyText.setVisibility(View.VISIBLE);
-            Utils.displaySnackBar(getString(R.string.empty_list_dash_board), binding.emptyText).show();
+            DateUtil.displaySnackBar(getString(R.string.empty_list_dash_board), binding.emptyText).show();
         } else {
             binding.emptyText.setVisibility(View.GONE);
         }
@@ -374,7 +374,7 @@ public class DashBoardFragment extends Fragment {
                     dateToString = dateToEditText.getText().toString();
                 }
 
-                editText.setText(Utils.getOutputDateFormt(selectedDate));
+                editText.setText(DateUtil.getOutputDateFormt(selectedDate));
                 dialog.dismiss();
             }
         });
@@ -389,7 +389,7 @@ public class DashBoardFragment extends Fragment {
 
     }
 
-    private void displayLegend(final List<Legend> legends) {
+    private void displayLegend(final List<LegendModel> legends) {
         if (legends.size() > 0) {
             binding.emptyText.setVisibility(View.GONE);
         }
@@ -405,7 +405,7 @@ public class DashBoardFragment extends Fragment {
                 loadAnimation(getContext(), R.anim.slide_in));
     }
 
-    private void displayPriorityLegend(final List<Legend> legends) {
+    private void displayPriorityLegend(final List<LegendModel> legends) {
         if (legends.size() > 0) {
             binding.emptyText.setVisibility(View.GONE);
         }

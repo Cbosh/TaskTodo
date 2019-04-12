@@ -4,13 +4,12 @@ import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.os.AsyncTask;
-import android.text.format.DateUtils;
 
 import com.mrbreak.todo.model.DashBoardFilterModel;
 import com.mrbreak.todo.repository.ToDoDao;
 import com.mrbreak.todo.repository.ToDoRepository;
 import com.mrbreak.todo.repository.model.ToDoModel;
-import com.mrbreak.todo.util.Utils;
+import com.mrbreak.todo.util.DateUtil;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -60,9 +59,9 @@ public class DashBoardListViewModel extends AndroidViewModel {
 
             if (listLiveData != null && listLiveData.size() > 0) {
                 for (ToDoModel toDoModel : listLiveData) {
-                    Date startDateFilter = Utils.getDueDate(filterings[0].getStartDate());
-                    Date endDateFilter = Utils.getDueDate(filterings[0].getStartDate());
-                    Date startDate = Utils.getDueDate(toDoModel.getStartTime());
+                    Date startDateFilter = DateUtil.getDueDate(filterings[0].getStartDate());
+                    Date endDateFilter = DateUtil.getDueDate(filterings[0].getStartDate());
+                    Date startDate = DateUtil.getDueDate(toDoModel.getStartTime());
                     if (toDoModel.getStartTime() != null && startDateFilter != null && endDateFilter != null &&
                             (startDateFilter.before(startDate) || startDateFilter.equals(startDate) &&
                                     endDateFilter.before(startDate) || endDateFilter.equals(startDate))) {

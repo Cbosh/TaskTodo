@@ -1,4 +1,4 @@
-package com.mrbreak.todo.fragments;
+package com.mrbreak.todo.view.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;

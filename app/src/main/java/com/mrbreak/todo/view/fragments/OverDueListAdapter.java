@@ -1,4 +1,4 @@
-package com.mrbreak.todo.fragments;
+package com.mrbreak.todo.view.fragments;
 
 import android.arch.paging.PagedListAdapter;
 import android.databinding.DataBindingUtil;
@@ -11,18 +11,18 @@ import android.view.ViewGroup;
 import com.mrbreak.todo.R;
 import com.mrbreak.todo.databinding.OverDueItemBinding;
 import com.mrbreak.todo.repository.model.ToDoModel;
-import com.mrbreak.todo.util.Utils;
-import com.mrbreak.todo.view.ToDoCallBack;
+import com.mrbreak.todo.util.DateUtil;
+import com.mrbreak.todo.view.ToDoClickCallBack;
 import com.mrbreak.todo.viewmodel.OverDueListViewModel;
 
 import java.util.Date;
 
 class OverDueListAdapter extends PagedListAdapter<ToDoModel, OverDueListAdapter.ViewHolder> {
 
-    private ToDoCallBack onClickCallBack;
+    private ToDoClickCallBack onClickCallBack;
     private OverDueListViewModel overDueListViewModel;
 
-    OverDueListAdapter(ToDoCallBack onClickCallBack, OverDueListViewModel overDueListViewModel) {
+    OverDueListAdapter(ToDoClickCallBack onClickCallBack, OverDueListViewModel overDueListViewModel) {
         super(DIFF_CALLBACK);
         this.onClickCallBack = onClickCallBack;
         this.overDueListViewModel = overDueListViewModel;
@@ -45,8 +45,8 @@ class OverDueListAdapter extends PagedListAdapter<ToDoModel, OverDueListAdapter.
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ToDoModel item = getItem(position);
         if (item != null) {
-            Date date = Utils.convertStringToDate(item.getDueDate());
-            String days = String.valueOf(Utils.getDaysDifference(new Date(), date));
+            Date date = DateUtil.convertStringToDate(item.getDueDate());
+            String days = String.valueOf(DateUtil.getDaysDifference(new Date(), date));
             int daysInt = Integer.parseInt(days);
             if (daysInt < 0) {
                 return;

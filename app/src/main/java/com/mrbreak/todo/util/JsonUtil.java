@@ -5,7 +5,7 @@ import android.content.Context;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import com.mrbreak.todo.model.Category;
+import com.mrbreak.todo.model.CategoryModel;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,27 +19,27 @@ import java.util.List;
 public class JsonUtil {
     private static Gson gson = new Gson();
 
-    public static String convertCategoriestoString(List<Category> categories) {
+    public static String convertCategoriestoString(List<CategoryModel> categories) {
         Gson gson = new Gson();
         return gson.toJson(
                 categories,
-                new TypeToken<ArrayList<Category>>() {
+                new TypeToken<ArrayList<CategoryModel>>() {
                 }.getType());
     }
 
-    public static List<Category> convertCategoriesString(String categoriesStr) {
-        return Collections.singletonList(gson.fromJson(categoriesStr, Category.class));
+    public static List<CategoryModel> convertCategoriesString(String categoriesStr) {
+        return Collections.singletonList(gson.fromJson(categoriesStr, CategoryModel.class));
     }
 
-    public static List<Category> jsonStringToArray(String jsonString) throws JSONException {
+    public static List<CategoryModel> jsonStringToArray(String jsonString) throws JSONException {
 
         Gson gson = new Gson();
-        List<Category> categories = new ArrayList<>();
+        List<CategoryModel> categories = new ArrayList<>();
 
         JSONArray jsonArray = new JSONArray(jsonString);
 
         for (int i = 0; i < jsonArray.length(); i++) {
-            categories.add(gson.fromJson(jsonArray.getJSONObject(i).toString(), Category.class));
+            categories.add(gson.fromJson(jsonArray.getJSONObject(i).toString(), CategoryModel.class));
         }
 
         return categories;
@@ -61,14 +61,14 @@ public class JsonUtil {
         return json;
     }
 
-    public static List<Category> loadCategories(Context context) throws IOException {
-        List<Category> categories = new ArrayList<>();
+    public static List<CategoryModel> loadCategories(Context context) throws IOException {
+        List<CategoryModel> categories = new ArrayList<>();
         try {
             String jsonFileStr = loadCategoriesJSONFromAsset(context);
 
             JsonObject jsonObject = gson.fromJson(jsonFileStr, JsonObject.class);
             jsonObject.get("categories").getAsJsonArray();
-            categories = gson.fromJson(jsonObject.get("categories").getAsJsonArray(), new TypeToken<ArrayList<Category>>() {
+            categories = gson.fromJson(jsonObject.get("categories").getAsJsonArray(), new TypeToken<ArrayList<CategoryModel>>() {
             }.getType());
         } catch (Exception e) {
             e.printStackTrace();

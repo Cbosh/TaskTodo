@@ -1,4 +1,4 @@
-package com.mrbreak.todo.fragments;
+package com.mrbreak.todo.view.fragments;
 
 import android.arch.paging.PagedListAdapter;
 import android.databinding.DataBindingUtil;
@@ -11,15 +11,15 @@ import android.view.ViewGroup;
 import com.mrbreak.todo.R;
 import com.mrbreak.todo.databinding.DoneItemBinding;
 import com.mrbreak.todo.repository.model.ToDoModel;
-import com.mrbreak.todo.view.ToDoCallBack;
+import com.mrbreak.todo.view.ToDoClickCallBack;
 import com.mrbreak.todo.viewmodel.DoneListViewModel;
 
 class DoneListAdapter extends PagedListAdapter<ToDoModel, DoneListAdapter.ViewHolder> {
 
-    private ToDoCallBack onClickCallBack;
+    private ToDoClickCallBack onClickCallBack;
     private DoneListViewModel doneListViewModel;
 
-    DoneListAdapter(ToDoCallBack onClickCallBack, DoneListViewModel doneListViewModel) {
+    DoneListAdapter(ToDoClickCallBack onClickCallBack, DoneListViewModel doneListViewModel) {
         super(DIFF_CALLBACK);
         this.onClickCallBack = onClickCallBack;
         this.doneListViewModel = doneListViewModel;

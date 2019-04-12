@@ -3,12 +3,9 @@ package com.mrbreak.todo;
 import android.app.Application;
 
 import com.mrbreak.todo.repository.model.ToDoModel;
-import com.mrbreak.todo.util.Utils;
 import com.mrbreak.todo.viewmodel.ToDoListViewModel;
 
 import org.junit.Test;
-
-import java.util.Date;
 
 import static org.junit.Assert.*;
 
@@ -30,7 +27,7 @@ public class ExampleUnitTest {
         toDoModel.setDone(false);
         toDoModel.setStartTime("");
         toDoModel.setContent("Read");
-        //toDoModel.setCreatedDate(Utils.getDueDate(new Date());
+        //toDoModel.setCreatedDate(DateUtil.getDueDate(new Date());
         ToDoListViewModel viewModel = new ToDoListViewModel(new Application());
         assertEquals(toDoModel.getContent(), "Read");
     }

@@ -1,4 +1,4 @@
-package com.mrbreak.todo.activities;
+package com.mrbreak.todo.view.activities;
 
 import android.content.Intent;
 import android.os.Build;

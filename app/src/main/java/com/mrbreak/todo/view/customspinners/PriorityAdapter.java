@@ -1,4 +1,4 @@
-package com.mrbreak.todo.customspinners;
+package com.mrbreak.todo.view.customspinners;
 
 import android.content.Context;
 import android.view.LayoutInflater;

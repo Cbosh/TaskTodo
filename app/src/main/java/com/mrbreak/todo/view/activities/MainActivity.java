@@ -1,4 +1,4 @@
-package com.mrbreak.todo.activities;
+package com.mrbreak.todo.view.activities;
 
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
@@ -32,15 +32,15 @@ import com.google.android.gms.ads.MobileAds;
 import com.mrbreak.todo.BuildConfig;
 import com.mrbreak.todo.R;
 import com.mrbreak.todo.constants.Constants;
-import com.mrbreak.todo.fragments.DashBoardFragment;
-import com.mrbreak.todo.fragments.ToDoDetailFragment;
-import com.mrbreak.todo.fragments.ToDoDoneFragment;
-import com.mrbreak.todo.fragments.ToDoListFragment;
-import com.mrbreak.todo.view.ChangeHeaderBar;
+import com.mrbreak.todo.view.MainActivityCallBack;
+import com.mrbreak.todo.view.fragments.DashBoardFragment;
+import com.mrbreak.todo.view.fragments.ToDoDetailFragment;
+import com.mrbreak.todo.view.fragments.ToDoDoneFragment;
+import com.mrbreak.todo.view.fragments.ToDoListFragment;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements ChangeHeaderBar {
+public class MainActivity extends AppCompatActivity implements MainActivityCallBack {
 
     private DrawerLayout mDrawerLayout;
     private ActionBar actionBar;
@@ -227,11 +227,6 @@ public class MainActivity extends AppCompatActivity implements ChangeHeaderBar {
     }
 
 
-    private void openCalendar() {
-        Intent intent = new Intent(getBaseContext(), CalendarActivity.class);
-        intent.putExtra(Constants.LIST, getBundle());
-        displayActivity(intent);
-    }
 
 
     private void openDashBoard() {

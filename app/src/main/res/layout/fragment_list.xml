@@ -14,7 +14,7 @@
         android:layout_height="match_parent"
         android:background="@color/off_white"
         android:orientation="vertical"
-        tools:context=".fragments.ToDoListFragment">
+        tools:context=".view.fragments.ToDoListFragment">
 
         <RelativeLayout
             android:layout_width="match_parent"

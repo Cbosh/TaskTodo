@@ -20,9 +20,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
 
-public class Utils {
+public class DateUtil {
     public static Date convertStringToDate(String dateString) {
         SimpleDateFormat format = new SimpleDateFormat(Constants.DAY_MONTH_DATE_FORMAT);
         Date date = null;
@@ -273,9 +272,9 @@ public class Utils {
         for (ToDoModel toDo : list) {
             if (toDo.getPriority() == priority) {
                 if (!TextUtils.isEmpty(dateFromStr) && !TextUtils.isEmpty(dateToStr)) {
-                    Date dateFrom = Utils.convertStringToDate(dateFromStr);
-                    Date dateTo = Utils.convertStringToDate(dateToStr);
-                    Date toDoDate = Utils.convertStringToDate(toDo.getDueDate());
+                    Date dateFrom = DateUtil.convertStringToDate(dateFromStr);
+                    Date dateTo = DateUtil.convertStringToDate(dateToStr);
+                    Date toDoDate = DateUtil.convertStringToDate(toDo.getDueDate());
 
                     if (dateFrom != null && dateTo != null) {
                         if ((toDoDate.equals(dateFrom) || toDoDate.after(dateFrom))
@@ -300,9 +299,9 @@ public class Utils {
         for (ToDoModel toDo : list) {
             if (toDo.getCategory().equalsIgnoreCase(category)) {
                 if (!TextUtils.isEmpty(dateFromStr) && !TextUtils.isEmpty(dateToStr)) {
-                    Date dateFrom = Utils.convertStringToDate(dateFromStr);
-                    Date dateTo = Utils.convertStringToDate(dateToStr);
-                    Date toDoDate = Utils.convertStringToDate(toDo.getDueDate());
+                    Date dateFrom = DateUtil.convertStringToDate(dateFromStr);
+                    Date dateTo = DateUtil.convertStringToDate(dateToStr);
+                    Date toDoDate = DateUtil.convertStringToDate(toDo.getDueDate());
 
                     if ((toDoDate.equals(dateFrom) || toDoDate.after(dateFrom))
                             && (toDoDate.equals(dateTo) || toDoDate.before(dateTo))) {
@@ -323,8 +322,8 @@ public class Utils {
         List<ToDoModel> doneList = new ArrayList<>();
         if (list != null && list.size() > 0) {
             for (ToDoModel toDo : list) {
-                Date date = Utils.convertStringToDate(toDo.getDueDate());
-                Integer days = Integer.valueOf(String.valueOf(Utils.getDaysDifference(new Date(), date)));
+                Date date = DateUtil.convertStringToDate(toDo.getDueDate());
+                Integer days = Integer.valueOf(String.valueOf(DateUtil.getDaysDifference(new Date(), date)));
 
                 if (toDo.isDone() && done) {
                     doneList.add(toDo);
@@ -347,9 +346,9 @@ public class Utils {
         if (list != null && list.size() > 0) {
             for (ToDoModel toDo : list) {
                 if (!TextUtils.isEmpty(dateFromStr) && !TextUtils.isEmpty(dateToStr)) {
-                    Date dateFrom = Utils.convertStringToDate(dateFromStr);
-                    Date dateTo = Utils.convertStringToDate(dateToStr);
-                    Date toDoDate = Utils.convertStringToDate(toDo.getDueDate());
+                    Date dateFrom = DateUtil.convertStringToDate(dateFromStr);
+                    Date dateTo = DateUtil.convertStringToDate(dateToStr);
+                    Date toDoDate = DateUtil.convertStringToDate(toDo.getDueDate());
 
                     if (toDo.getPriority() == priority && toDo.getCategory().
                             equalsIgnoreCase(category)
@@ -374,8 +373,8 @@ public class Utils {
         List<ToDoModel> overDue = new ArrayList<>();
         if (list != null && !list.isEmpty()) {
             for (ToDoModel toDo : list) {
-                Date date = Utils.convertStringToDate(toDo.getDueDate());
-                Integer days = Integer.valueOf(String.valueOf(Utils.getDaysDifference(new Date(), date)));
+                Date date = DateUtil.convertStringToDate(toDo.getDueDate());
+                Integer days = Integer.valueOf(String.valueOf(DateUtil.getDaysDifference(new Date(), date)));
                 if (days < 0 && !toDo.isDone()) {
                     overDue.add(toDo);
                 }

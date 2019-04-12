@@ -1,4 +1,4 @@
-package com.mrbreak.todo.customspinners;
+package com.mrbreak.todo.view.customspinners;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -8,16 +8,16 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.mrbreak.todo.R;
-import com.mrbreak.todo.model.Category;
+import com.mrbreak.todo.model.CategoryModel;
 
 import java.util.List;
 
 public class CategoriesAdapter extends BaseAdapter {
     Context context;
-    List<Category> categories;
+    List<CategoryModel> categories;
     LayoutInflater inflater;
 
-    public CategoriesAdapter(Context applicationContext, List<Category> categories) {
+    public CategoriesAdapter(Context applicationContext, List<CategoryModel> categories) {
         this.context = applicationContext;
         this.categories = categories;
         inflater = (LayoutInflater.from(applicationContext));

@@ -16,10 +16,11 @@
             android:icon="@mipmap/outline_share_black_24"
             android:title="@string/share" />
 
-        <!--<item-->
-        <!--android:id="@+id/calendar"-->
-        <!--android:icon="@mipmap/outline_today_black_24"-->
-        <!--android:title="Calendar" />-->
+        <item
+        android:id="@+id/calendar"
+            android:visible="false"
+        android:icon="@mipmap/outline_today_black_24"
+        android:title="Calendar" />
 
     </group>
 </menu>

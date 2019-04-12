@@ -9,7 +9,6 @@ import android.os.AsyncTask;
 
 import com.mrbreak.todo.repository.model.ToDoModel;
 
-import java.util.Collections;
 import java.util.List;
 
 public class ToDoRepository {

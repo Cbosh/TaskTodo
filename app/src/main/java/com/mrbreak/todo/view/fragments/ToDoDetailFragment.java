@@ -1,4 +1,4 @@
-package com.mrbreak.todo.fragments;
+package com.mrbreak.todo.view.fragments;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -12,6 +12,7 @@ import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
@@ -33,14 +34,14 @@ import android.widget.TimePicker;
 import com.mrbreak.todo.R;
 import com.mrbreak.todo.components.CustomTextView;
 import com.mrbreak.todo.constants.Constants;
-import com.mrbreak.todo.customspinners.CategoriesAdapter;
-import com.mrbreak.todo.customspinners.PriorityAdapter;
+import com.mrbreak.todo.util.DateUtil;
+import com.mrbreak.todo.view.customspinners.CategoriesAdapter;
+import com.mrbreak.todo.view.customspinners.PriorityAdapter;
 import com.mrbreak.todo.databinding.FragmentDetailBinding;
-import com.mrbreak.todo.model.Category;
+import com.mrbreak.todo.model.CategoryModel;
 import com.mrbreak.todo.repository.model.ToDoModel;
 import com.mrbreak.todo.util.JsonUtil;
-import com.mrbreak.todo.util.Utils;
-import com.mrbreak.todo.view.ChangeHeaderBar;
+import com.mrbreak.todo.view.MainActivityCallBack;
 import com.mrbreak.todo.viewmodel.ToDoDetailViewModel;
 
 import java.io.IOException;
@@ -51,13 +52,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+
 public class ToDoDetailFragment extends Fragment {
-    private ChangeHeaderBar changeHeaderBar;
+    private MainActivityCallBack mainActivityCallBack;
     private ToDoModel toDo;
     private int priority;
     private String category;
     private boolean isDone;
-    private List<Category> categories;
+    private List<CategoryModel> categories;
 
     private ToDoDetailViewModel toDoDetailViewModel;
     private FragmentDetailBinding binding;
@@ -118,7 +121,7 @@ public class ToDoDetailFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (toDo == null) {
-                    Utils.displaySnackBar(getString(R.string.cannot_share_empty_task), binding.shareLinearLayout).show();
+                    DateUtil.displaySnackBar(getString(R.string.cannot_share_empty_task), binding.shareLinearLayout).show();
                     return;
                 }
 
@@ -159,14 +162,14 @@ public class ToDoDetailFragment extends Fragment {
         binding.startTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showTimePickerDialog(Utils.getCurrentHour(), Utils.getCurrentMinutes(), true);
+                showTimePickerDialog(DateUtil.getCurrentHour(), DateUtil.getCurrentMinutes(), true);
             }
         });
 
         binding.endTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showTimePickerDialog(Utils.getCurrentHour(), Utils.getCurrentMinutes(), false);
+                showTimePickerDialog(DateUtil.getCurrentHour(), DateUtil.getCurrentMinutes(), false);
             }
         });
 
@@ -181,7 +184,7 @@ public class ToDoDetailFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (toDo == null) {
-                    Utils.displaySnackBar(getString(R.string.cannot_delete_empty_task), binding.deleteLinearLayout).show();
+                    DateUtil.displaySnackBar(getString(R.string.cannot_delete_empty_task), binding.deleteLinearLayout).show();
                     return;
                 }
 
@@ -193,6 +196,7 @@ public class ToDoDetailFragment extends Fragment {
                         R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
+                                //TODO: delete event from calendar
                                 toDoDetailViewModel.delete(toDo);
                                 getActivity().onBackPressed();
                             }
@@ -251,10 +255,10 @@ public class ToDoDetailFragment extends Fragment {
 
                 isDone = isChecked;
                 if (isChecked && isValidInput() && toDo != null) {
-                    Utils.displaySnackBar(getString(R.string.task_complete_message),
+                    DateUtil.displaySnackBar(getString(R.string.task_complete_message),
                             binding.doneToggleButton).show();
                     toDo.setDone(isDone);
-                    toDo.setCompletedDate(Utils.getCompletedDateTime());
+                    toDo.setCompletedDate(DateUtil.getCompletedDateTime());
                     toDoDetailViewModel.update(toDo);
                 }
             }
@@ -283,11 +287,11 @@ public class ToDoDetailFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof ChangeHeaderBar) {
-            changeHeaderBar = (ChangeHeaderBar) context;
+        if (context instanceof MainActivityCallBack) {
+            mainActivityCallBack = (MainActivityCallBack) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement ChangeHeaderBar");
+                    + " must implement MainActivityCallBack");
         }
     }
 
@@ -302,8 +306,8 @@ public class ToDoDetailFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        changeHeaderBar.changeHeaderBar();
-        Utils.dismissKeyBoard(getContext());
+        mainActivityCallBack.changeHeaderBar();
+        DateUtil.dismissKeyBoard(getContext());
 
         if (getArguments() != null && getArguments().containsKey(Constants.ISEDIT) &&
                 getArguments().getBoolean(Constants.ISEDIT)) {
@@ -384,12 +388,12 @@ public class ToDoDetailFragment extends Fragment {
 
     private void getToDoDetails() {
         if (!isValidInput()) {
-            Utils.displaySnackBar(getString(R.string.add_task_details), binding.saveLinearLayout).show();
+            DateUtil.displaySnackBar(getString(R.string.add_task_details), binding.saveLinearLayout).show();
             return;
         }
 
         if (toDo != null && toDo.isDone()) {
-            Utils.displaySnackBar(getString(R.string.update_saved_task_message),
+            DateUtil.displaySnackBar(getString(R.string.update_saved_task_message),
                     binding.doneToggleButton).show();
             return;
         }
@@ -397,38 +401,38 @@ public class ToDoDetailFragment extends Fragment {
         ToDoModel newToDo = new ToDoModel();
 
         if (isDone) {
-            newToDo.setCompletedDate(Utils.getCompletedDateTime());
+            newToDo.setCompletedDate(DateUtil.getCompletedDateTime());
         }
 
         newToDo.setCategory(category);
         newToDo.setContent(binding.content.getText().toString().trim());
 
-        String minutes = String.valueOf(Utils.getCurrentHour());
-        String hours = String.valueOf(Utils.getCurrentHour());
+        String minutes = String.valueOf(DateUtil.getCurrentHour());
+        String hours = String.valueOf(DateUtil.getCurrentHour());
 
         if (minutes.length() == 1) {
             minutes = Constants.ZERO_STRING + minutes;
         }
 
         String currentTime = "";
-        if (Utils.getCurrentHour() >= 12) {
+        if (DateUtil.getCurrentHour() >= 12) {
             currentTime = hours + Constants.COLON + minutes + Constants.SPACE + Constants.PM;
         } else {
             currentTime = hours + Constants.COLON + minutes + Constants.SPACE + Constants.AM;
         }
 
-        String strStartFrom = Utils.getFormattedTime(binding.dueDate.getText().toString().trim(), currentTime);
+        String strStartFrom = DateUtil.getFormattedTime(binding.dueDate.getText().toString().trim(), currentTime);
 
         newToDo.setDueDate(strStartFrom);
 
         if (!TextUtils.isEmpty(startTime)) {
-            newToDo.setStartTime(Utils.getFormattedTime(binding.dueDate.getText().toString().trim(), startTime));
+            newToDo.setStartTime(DateUtil.getFormattedTime(binding.dueDate.getText().toString().trim(), startTime));
         } else {
             newToDo.setStartTime(toDo.getStartTime());
         }
 
         if (!TextUtils.isEmpty(endTime)) {
-            newToDo.setEndTime(Utils.getFormattedTime(binding.dueDate.getText().toString().trim(), endTime));
+            newToDo.setEndTime(DateUtil.getFormattedTime(binding.dueDate.getText().toString().trim(), endTime));
         } else {
             newToDo.setEndTime(toDo.getEndTime());
         }
@@ -442,7 +446,9 @@ public class ToDoDetailFragment extends Fragment {
             newToDo.setId(toDo.getId());
             toDoDetailViewModel.update(newToDo);
         } else {
-            newToDo.setCreatedDate(Utils.convertDateToString(new Date()));
+            //TODO: Add event to calendar then update to-do with event ID
+            //long eventID = mainActivityCallBack.addEventToCalendar(newToDo);
+            newToDo.setCreatedDate(DateUtil.convertDateToString(new Date()));
             newToDo.setToDoGuid(UUID.randomUUID().toString());
             toDoDetailViewModel.insert(newToDo);
         }
@@ -519,7 +525,7 @@ public class ToDoDetailFragment extends Fragment {
                 }
                 int dayOfMonth = myDatePicker.getDayOfMonth();
                 String selectedDate = year + Constants.SPACE + Constants.ZERO_STRING + monthOfYear + Constants.SPACE + dayOfMonth;
-                binding.dueDate.setText(Utils.getOutputDateFormt(selectedDate));
+                binding.dueDate.setText(DateUtil.getOutputDateFormt(selectedDate));
                 dialog.dismiss();
             }
         });
@@ -583,5 +589,18 @@ public class ToDoDetailFragment extends Fragment {
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
         dialog.show();
         dialog.getWindow().setAttributes(layoutParams);
+    }
+
+    private void checkPermissions(int callbackId, String... permissionsId) {
+        boolean permissions = true;
+        for (String p : permissionsId) {
+            permissions = permissions && ContextCompat.checkSelfPermission(getContext(), p) ==
+                    PERMISSION_GRANTED;
+        }
+
+        if (!permissions) {
+            ActivityCompat.requestPermissions(getActivity(), permissionsId, callbackId);
+        } else {
+        }
     }
 }

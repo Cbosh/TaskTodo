@@ -1,4 +1,4 @@
-package com.mrbreak.todo.activities;
+package com.mrbreak.todo.view.activities;
 
 import android.content.Intent;
 import android.os.Build;
@@ -14,9 +14,7 @@ import android.view.WindowManager;
 
 import com.mrbreak.todo.R;
 import com.mrbreak.todo.constants.Constants;
-import com.mrbreak.todo.fragments.DashBoardFragment;
-
-import org.greenrobot.eventbus.EventBus;
+import com.mrbreak.todo.view.fragments.DashBoardFragment;
 
 public class DashBoardActivity extends AppCompatActivity {
 

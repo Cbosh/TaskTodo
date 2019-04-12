@@ -8,7 +8,7 @@ import android.text.format.DateUtils;
 
 import com.mrbreak.todo.repository.model.ToDoModel;
 import com.mrbreak.todo.repository.ToDoRepository;
-import com.mrbreak.todo.util.Utils;
+import com.mrbreak.todo.util.DateUtil;
 
 import java.util.Date;
 import java.util.List;
@@ -37,16 +37,16 @@ public class ToDoListViewModel extends AndroidViewModel {
             return "";
         }
 
-        return "End time " + Utils.getTime(toDo.getEndTime());
+        return "End time " + DateUtil.getTime(toDo.getEndTime());
     }
 
     public String getDueDate(ToDoModel toDo) {
-        Date date = Utils.getDueDate(toDo.getStartTime());
-        String days = String.valueOf(Utils.getDaysDifference(new Date(), date));
+        Date date = DateUtil.getDueDate(toDo.getStartTime());
+        String days = String.valueOf(DateUtil.getDaysDifference(new Date(), date));
         int daysInt = Integer.parseInt(days);
 
         if (days.contentEquals("0") && date.equals(new Date())) {
-            if (Utils.getCurrentHour() > Utils.getHour(toDo.getStartTime())
+            if (DateUtil.getCurrentHour() > DateUtil.getHour(toDo.getStartTime())
                     && date.equals(new Date())) {
                 return "Task overdue!";
             }
@@ -54,14 +54,14 @@ public class ToDoListViewModel extends AndroidViewModel {
             return "Task overdue!";
         } else if (days.contentEquals("0") && date.after(new Date())) {
             if (DateUtils.isToday(date.getTime()) && DateUtils.isToday(new Date().getTime())) {
-                return "Due in " + Utils.getTime(toDo.getStartTime());
+                return "Due in " + DateUtil.getTime(toDo.getStartTime());
             }
             return "Task due tomorrow";
         }
 
         if (days.contentEquals("0") && date.equals(new Date()) &&
-                Utils.getCurrentHour() == Utils.getHour(toDo.getStartTime()) &&
-                Utils.getCurrentMinutes() >= Utils.getMinutes(toDo.getStartTime())) {
+                DateUtil.getCurrentHour() == DateUtil.getHour(toDo.getStartTime()) &&
+                DateUtil.getCurrentMinutes() >= DateUtil.getMinutes(toDo.getStartTime())) {
             days = "Task overdue!";
         } else if (daysInt < 0) {
             days = "Task overdue!";
@@ -73,7 +73,7 @@ public class ToDoListViewModel extends AndroidViewModel {
             }
 
         } else {
-            days = "Due in " + Utils.getTime(toDo.getStartTime());
+            days = "Due in " + DateUtil.getTime(toDo.getStartTime());
         }
 
         return days;

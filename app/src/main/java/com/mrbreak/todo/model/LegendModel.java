@@ -1,11 +1,11 @@
 package com.mrbreak.todo.model;
 
 
-public class Legend {
+public class LegendModel {
     private int legend;
     private String percentage;
 
-    public Legend(int legend, String percentage) {
+    public LegendModel(int legend, String percentage) {
         this.legend = legend;
         this.percentage = percentage;
     }

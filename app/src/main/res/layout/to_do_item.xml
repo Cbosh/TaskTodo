@@ -14,7 +14,7 @@
 
         <variable
             name="callback"
-            type="com.mrbreak.todo.view.ToDoCallBack" />
+            type="com.mrbreak.todo.view.ToDoClickCallBack" />
     </data>
 
     <RelativeLayout
@@ -23,7 +23,7 @@
         android:background="@color/off_white"
         android:onClick="@{()->callback.onClick(todomodel)}"
         android:orientation="vertical"
-        tools:context=".fragments.ToDoListFragment">
+        tools:context=".view.fragments.ToDoListFragment">
 
         <RelativeLayout
             android:layout_width="match_parent"

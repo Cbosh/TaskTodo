@@ -1,11 +1,11 @@
 package com.mrbreak.todo.model;
 
 
-public class Category {
+public class CategoryModel {
     private String categoryName;
     private int categoryId;
 
-    public Category(String categoryName, int categoryId) {
+    public CategoryModel(String categoryName, int categoryId) {
         this.categoryName = categoryName;
         this.categoryId = categoryId;
     }

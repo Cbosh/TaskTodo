@@ -1,4 +1,4 @@
-package com.mrbreak.todo.fragments;
+package com.mrbreak.todo.view.fragments;
 
 import android.arch.lifecycle.Lifecycle;
 import android.arch.lifecycle.ViewModelProviders;
@@ -14,11 +14,11 @@ import android.view.ViewGroup;
 
 import com.google.android.gms.ads.AdRequest;
 import com.mrbreak.todo.R;
-import com.mrbreak.todo.activities.MainActivity;
+import com.mrbreak.todo.view.ToDoClickCallBack;
+import com.mrbreak.todo.view.activities.MainActivity;
 import com.mrbreak.todo.constants.Constants;
 import com.mrbreak.todo.databinding.FragmentToDoDoneBinding;
 import com.mrbreak.todo.repository.model.ToDoModel;
-import com.mrbreak.todo.view.ToDoCallBack;
 import com.mrbreak.todo.viewmodel.DoneListViewModel;
 
 public class ToDoDoneFragment extends Fragment {
@@ -65,7 +65,7 @@ public class ToDoDoneFragment extends Fragment {
         doneListViewModel.getPagedListLiveData().observe(this, toDoListAdapter::submitList);
     }
 
-    private ToDoCallBack toDoCallBack = new ToDoCallBack() {
+    private ToDoClickCallBack toDoCallBack = new ToDoClickCallBack() {
         @Override
         public void onClick(ToDoModel toDoModel) {
             if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {

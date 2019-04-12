@@ -11,7 +11,7 @@ import android.text.TextUtils;
 
 import com.mrbreak.todo.repository.ToDoRepository;
 import com.mrbreak.todo.repository.model.ToDoModel;
-import com.mrbreak.todo.util.Utils;
+import com.mrbreak.todo.util.DateUtil;
 
 public class ToDoDetailViewModel extends AndroidViewModel {
     private ToDoRepository toDoRepository;
@@ -53,7 +53,7 @@ public class ToDoDetailViewModel extends AndroidViewModel {
             return "";
         }
 
-        return Utils.getTime(model.getStartTime());
+        return DateUtil.getTime(model.getStartTime());
     }
 
     public String getEndTime(ToDoModel model) {
@@ -61,7 +61,7 @@ public class ToDoDetailViewModel extends AndroidViewModel {
             return "";
         }
 
-        return Utils.getTime(model.getEndTime());
+        return DateUtil.getTime(model.getEndTime());
     }
 
     public String getDueDate(ToDoModel model) {
@@ -69,7 +69,7 @@ public class ToDoDetailViewModel extends AndroidViewModel {
             return "";
         }
 
-        return Utils.getDisplayDueDate(model.getDueDate());
+        return DateUtil.getDisplayDueDate(model.getDueDate());
     }
 
     /**

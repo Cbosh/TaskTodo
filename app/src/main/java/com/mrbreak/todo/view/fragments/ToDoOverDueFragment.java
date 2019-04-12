@@ -1,4 +1,4 @@
-package com.mrbreak.todo.fragments;
+package com.mrbreak.todo.view.fragments;
 
 import android.arch.lifecycle.Lifecycle;
 import android.arch.lifecycle.ViewModelProviders;
@@ -12,11 +12,11 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.mrbreak.todo.R;
-import com.mrbreak.todo.activities.MainActivity;
+import com.mrbreak.todo.view.ToDoClickCallBack;
+import com.mrbreak.todo.view.activities.MainActivity;
 import com.mrbreak.todo.constants.Constants;
 import com.mrbreak.todo.databinding.FragmentTodoOverdueBinding;
 import com.mrbreak.todo.repository.model.ToDoModel;
-import com.mrbreak.todo.view.ToDoCallBack;
 import com.mrbreak.todo.viewmodel.OverDueListViewModel;
 
 public class ToDoOverDueFragment extends Fragment {
@@ -63,7 +63,7 @@ public class ToDoOverDueFragment extends Fragment {
         overDueListViewModel.getPagedListLiveData().observe(this, overDueListAdapter::submitList);
     }
 
-    private ToDoCallBack toDoCallBack = new ToDoCallBack() {
+    private ToDoClickCallBack toDoCallBack = new ToDoClickCallBack() {
         @Override
         public void onClick(ToDoModel toDoModel) {
             if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {

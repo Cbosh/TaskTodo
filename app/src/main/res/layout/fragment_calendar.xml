@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".fragments.CalendarFragment">
+    tools:context=".view.fragments.CalendarFragment">
 
     <RelativeLayout
         android:id="@+id/toolBar"

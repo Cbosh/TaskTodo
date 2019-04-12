@@ -1,4 +1,4 @@
-package com.mrbreak.todo.fragments;
+package com.mrbreak.todo.view.fragments;
 
 import android.databinding.DataBindingUtil;
 import android.support.annotation.NonNull;
@@ -10,8 +10,8 @@ import android.widget.CompoundButton;
 import com.mrbreak.todo.R;
 import com.mrbreak.todo.databinding.ToDoItemBinding;
 import com.mrbreak.todo.repository.model.ToDoModel;
-import com.mrbreak.todo.util.Utils;
-import com.mrbreak.todo.view.ToDoCallBack;
+import com.mrbreak.todo.util.DateUtil;
+import com.mrbreak.todo.view.ToDoClickCallBack;
 import com.mrbreak.todo.viewmodel.ToDoListViewModel;
 
 import java.util.ArrayList;
@@ -19,11 +19,11 @@ import java.util.List;
 
 class ToDoListAdapter extends RecyclerView.Adapter<ToDoListAdapter.ViewHolder> {
 
-    private ToDoCallBack onClickCallBack;
+    private ToDoClickCallBack onClickCallBack;
     private ToDoListViewModel doListViewModel;
     private List<ToDoModel> list;
 
-    ToDoListAdapter(ToDoCallBack onClickCallBack, ToDoListViewModel doListViewModel) {
+    ToDoListAdapter(ToDoClickCallBack onClickCallBack, ToDoListViewModel doListViewModel) {
         this.onClickCallBack = onClickCallBack;
         this.doListViewModel = doListViewModel;
     }
@@ -32,9 +32,8 @@ class ToDoListAdapter extends RecyclerView.Adapter<ToDoListAdapter.ViewHolder> {
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
-        ToDoItemBinding binding = DataBindingUtil.inflate(
-                LayoutInflater.from(parent.getContext()), R.layout.to_do_item, parent,
-                false);
+        ToDoItemBinding binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                R.layout.to_do_item, parent, false);
 
         binding.setCallback(onClickCallBack);
 
@@ -71,9 +70,9 @@ class ToDoListAdapter extends RecyclerView.Adapter<ToDoListAdapter.ViewHolder> {
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     ToDoModel toDo = list.get(holder.getAdapterPosition());
                     toDo.setDone(true);
-                    toDo.setCompletedDate(Utils.getCompletedDateTime());
+                    toDo.setCompletedDate(DateUtil.getCompletedDateTime());
                     doListViewModel.update(toDo);
-                    Utils.displaySnackBar(holder.binding.doneToggleButton.getContext().getString(
+                    DateUtil.displaySnackBar(holder.binding.doneToggleButton.getContext().getString(
                             R.string.task_complete_message),
                             holder.binding.doneToggleButton).show();
                 }
